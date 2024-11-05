@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "ptbrush"
+version = "0.1.0"
+description = ""
+authors = ["huihuidehui <kanhuihui@163.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+click = "^8.1.7"
+qbittorrent-api = "^2024.10.68"
+pydantic = "^2.9.2"
+pydantic-settings = "^2.6.1"
+loguru = "^0.7.2"
+requests = "^2.32.3"
+prettytable = "^3.12.0"
+peewee = "^3.17.7"
+apscheduler = "^3.10.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
