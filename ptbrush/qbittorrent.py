@@ -29,6 +29,7 @@ class QBitorrentTorrent(BaseModel):
     dl_total_size: int
     dlspeed: int
     hash:str=""
+    size:int=0
 
 class QBittorrentStatus(BaseModel):
     dl_total_size: int
@@ -83,6 +84,7 @@ class QBittorrent:
             dlspeed = i.get('dlspeed') if i.get('dlspeed') else 0
             completed = i.get('completion_on') > 0
             torrent_hash = i.get('hash')
+            size = i.get('size', 0)
             result.append(QBitorrentTorrent(
                 hash=torrent_hash,
                 name=torrent_name,
@@ -93,7 +95,8 @@ class QBittorrent:
                 dl_total_size=dl_total_size,
                 dlspeed=dlspeed,
                 free_end_time=end_time,
-                completed=completed
+                completed=completed,
+                size=size
             ))
         return result
 
@@ -134,93 +137,30 @@ class QBittorrent:
         return res == "Ok."
 
     
-    def delete(self, torrent_hash:str):
+    def cancel_download(self, torrent_hash:str):
         """
-        根据种子hash值限制其下载速度
+        根据种子hash值，取消种子下载，但已下载的文件继续做种
         """
-        self.qb.torrents_delete(delete_files=True, torrent_hashes=[torrent_hash])
+        files = self.get_torrent_files(torrent_hash)
+        file_ids = [file['index'] for file in files]
+        self.set_no_download_files(torrent_hash, file_ids)
+        # self.qb.torrents_delete(delete_files=True, torrent_hashes=[torrent_hash])
     
-    # @classmethod
-    # def parse_hash_from_magnet(self, magnet_link: str) -> str:
-    #     """
-    #     从磁力链接中提取哈希值
-    #     :param magnet_link:
-    #     :return:
-    #     """
+   
 
-    #     hash_str = re.search(r"urn:btih:(\w+)", magnet_link)
-    #     if hash_str:
-    #         return hash_str.groups()[0]
-    #     else:
-    #         return ""
+    def get_torrent_files(self, hash: str) -> List[dict]:
+        """
+        检索单个种子的所有文件
+        """
+        files = self.qb.torrents_files(torrent_hash=hash)
+        return files
 
-    # @classmethod
-    # def parse_hash_from_torrent(self, torrent_content: bytes) -> str:
-    #     info = lt.torrent_info(torrent_content)
-    #     info_hash = info.info_hash()
-    #     hexadecimal = str(info_hash)
-    #     return hexadecimal
-    #     # integer = int(hexadecimal, 16)
-
-    # def get_all_torrents(self, hashs: List[str] = []) -> List[TorrentTask]:
-    #     result = []
-    #     if not hashs:
-    #         data = self.qb.torrents_info(tag=self.tag).data
-    #     else:
-    #         data = self.qb.torrents_info(tag=self.tag, torrent_hashes=hashs)
-    #     for i in data:
-    #         result.append(self._extract_torrent_task(i))
-    #     return result
-
-    # def get_downloading_torrents(self) -> List[TorrentTask]:
-    #     result = []
-    #     for i in self.qb.torrents_info(status_filter="downloading").data:
-    #         if not (i.get('tags') and self.tag in i.get('tags')):
-    #             continue
-    #         if i.get("state") == "downloading":
-    #             status = 0
-    #         elif i.get("progress") == 1:
-    #             status = 2
-    #         else:
-    #             status = 1
-    #         content_path = i.content_path
-    #         # print(i.get('state'), i.get('name'))
-    #         files = [
-    #             TorrentTaskFile(
-    #                 size=file.size / 1024 / 1024 / 1024,
-    #                 path=content_path + file.name,
-    #             )
-    #             for file in i.files
-    #         ]
-    #         result.append(
-    #             TorrentTask(
-    #                 # size: float
-    #                 # files: Optional[List[TorrentTaskFile]]=[]
-    #                 files=files,
-    #                 status=status,
-    #                 name=i.name,
-    #                 created_time=datetime.fromtimestamp(i.added_on),
-    #                 progress=i.progress,
-    #                 hash=i.hash,
-    #                 completed_time=datetime.fromtimestamp(i.completion_on),
-    #                 size=i.size / 1024 / 1024 / 1024,
-    #             )
-    #         )
-    #     return result
-
-    # def _get_torrent_files(self, hash: str) -> List[str]:
-    #     """
-    #     检索单个种子的所有文件
-    #     """
-    #     files = self.qb.torrents_files(torrent_hash=hash)
-    #     return files
-
-    # def _set_no_download_files(self, hash: str, file_ids: List[int]) -> bool:
-    #     """
-    #     设置种子的某个文件不下载
-    #     """
-    #     self.qb.torrents_file_priority(hash, file_ids=file_ids, priority=0)
-    #     return True
+    def set_no_download_files(self, hash: str, file_ids: List[int]) -> bool:
+        """
+        设置种子的某个文件不下载
+        """
+        self.qb.torrents_file_priority(hash, file_ids=file_ids, priority=0)
+        return True
 
     # def clean_torrent(self, hash: str) -> bool:
     #     """

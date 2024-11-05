@@ -8,15 +8,14 @@
 """
 
 
-from copy import copy
 from datetime import datetime, timedelta
 import json
 from time import sleep
-from typing import Generator, List
+from typing import Generator
 
 from loguru import logger
-from ptbrush.model import Torrent
-from ptbrush.site import BaseSiteSpider
+from model import Torrent
+from ptsite import BaseSiteSpider
 
 
 class MTeamSpider(BaseSiteSpider):

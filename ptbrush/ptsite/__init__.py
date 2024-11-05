@@ -7,13 +7,12 @@
 @Desc    :   None
 """
 import abc
-import json
 from typing import Any, Generator, List
 
 import requests
 
-from ptbrush.config.config import HeaderParam
-from ptbrush.model import Torrent
+from config.config import HeaderParam
+from model import Torrent
 
 
 class BaseSiteSpider:
@@ -53,7 +52,7 @@ class BaseSiteSpider:
 
 
 class TorrentFetch:
-    from ptbrush.site.mteam import MTeamSpider
+    from ptsite.mteam import MTeamSpider
 
     SITE_SPIDER_MAP = {"M-Team": MTeamSpider}
 

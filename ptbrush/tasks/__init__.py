@@ -9,34 +9,52 @@
 '''
 
 # here put the import lib
-from ptbrush.tasks.services import PtTorrentService, QBTorrentService, BrushService
+import sys
+from loguru import logger
+from tasks.services import PtTorrentService, QBTorrentService, BrushService
+
+
 
 # 抓取PT站种子
+
+
 def fetch_pt_torrents():
     PtTorrentService().fetcher()
 
 # 抓取QB中的种子信息
+
+
 def fetch_qb_torrents():
     QBTorrentService().fetcher()
 
 # 抓取QB的信息
+
+
 def fetch_qb_status():
     QBTorrentService().fetch_qb_status()
 
 # 刷流
+
+
 def brush():
     BrushService().brush()
 
 # 清理即将过期种子
+
+
 def clean_will_expire_torrents():
     QBTorrentService().clean_will_expired()
 
-
+# 对大包种子进行瘦身
+def torrent_thinned():
+    QBTorrentService().torrent_thinned()
 
 
 if __name__ == "__main__":
+    clean_will_expire_torrents()
+    # torrent_thinned()
     # fetch_pt_torrents()
-    fetch_qb_torrents()
+    # fetch_qb_torrents()
     # while True:
     #     fetch_qb_status()
     #     sleep(3)

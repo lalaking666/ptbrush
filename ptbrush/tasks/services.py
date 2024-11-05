@@ -12,11 +12,11 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
 from loguru import logger
-from ptbrush.config.config import PTBrushConfig, SiteModel
-from ptbrush.model import Torrent
-from ptbrush.db import Torrent as TorrentDB, BrushTorrent, QBStatus
-from ptbrush.qbittorrent import QBittorrent
-from ptbrush.site import TorrentFetch
+from config.config import PTBrushConfig, SiteModel
+from model import Torrent
+from db import Torrent as TorrentDB, BrushTorrent, QBStatus
+from qbittorrent import QBittorrent
+from ptsite import TorrentFetch
 import peewee
 
 
@@ -29,20 +29,21 @@ class PtTorrentService():
         """
         logger.info(f"开始抓取PT站点FREE种子")
         sites = PTBrushConfig().sites
+        count = 0
         for site in sites:
-            logger.info(f'开始处理站点:{site.name}')
+            logger.debug(f'开始处理站点:{site.name}')
             torrent_fetcher = TorrentFetch(
                 site.name, cookie=site.cookie, headers=site.headers
             )
             for torrent in torrent_fetcher.free_torrents:
-                logger.info(f"从{site.name}抓取到种子: {torrent.name}")
+                logger.debug(f"从{site.name}抓取到种子: {torrent.name}")
                 self._insert_or_update_torrent(torrent)
+                count += 1
+        logger.info(f"抓取PT站点FREE种子完成，本轮共抓取到{count}个种子")
 
-        logger.info(f"抓取PT站点FREE种子完成")
-        
     def _insert_or_update_torrent(self, torrent: Torrent):
         updated_time = datetime.now()
-        logger.info(f"insert or update torrent:{torrent.site} {torrent.id}")
+        logger.debug(f"insert or update torrent:{torrent.site} {torrent.id}")
         TorrentDB.insert(name=torrent.name, site=torrent.site, torrent_id=torrent.id, leechers=torrent.leechers, seeders=torrent.seeders,
                          size=torrent.size, free_end_time=torrent.free_end_time, score=torrent.score,
                          ).on_conflict(conflict_target=[TorrentDB.site, TorrentDB.torrent_id], update=dict(
@@ -79,6 +80,8 @@ class QBTorrentService():
         """
         获取所有正在刷流的种子，记录其信息
         """
+        logger.info(f"开始抓取qb中种子状态")
+        count = 0
         for torrent in self._qb.torrents:
             torrent_db, flag = TorrentDB.get_or_create(
                 site=torrent.site, torrent_id=torrent.torrent_id, defaults={'name': torrent.name, 'brushed': True, 'free_end_time': torrent.free_end_time})
@@ -91,7 +94,8 @@ class QBTorrentService():
                 dl_total_size=torrent.dl_total_size,
                 dlspeed=torrent.dlspeed,
             )
-            logger.info(f"Record brush torrent status: {torrent.name}")
+            logger.debug(f"Record brush torrent status: {torrent.name}")
+        logger.info(f"抓取qb中种子状态完成，本轮共记录{count}个种子状态")
 
     def clean_will_expired(self):
         """
@@ -101,24 +105,68 @@ class QBTorrentService():
         count = 0
         current_timestamp = datetime.now().timestamp()
         # 截止时间戳，1小时后
-        # 当free时间不足1小时时，直接删除
+        # 当free时间不足1小时时，取消下载所有文件，但不删除种子，已下载的文件会继续做种.
         expire_timestamp = current_timestamp + 3600
         for torrent in self._qb.torrents:
             if torrent.completed:
                 continue
 
             free_timestamp = torrent.free_end_time.timestamp()
-            if expire_timestamp > free_timestamp:
+            if free_timestamp > expire_timestamp:
                 continue
 
-            logger.info(
+            logger.debug(
                 f"Delete torrent where will to expire {torrent.name}, free end time:{torrent.free_end_time}")
-            
+
             # 直接删除种子
-            self._qb.delete(torrent.hash)
+            self._qb.cancel_download(torrent.hash)
             count += 1
-    
+
         logger.info(f"清理即将过期的种子完成，本次删除种子数:{count}")
+
+    def torrent_thinned(self):
+        """
+        对下载中的种子，进行瘦身
+        """
+        logger.info(f"开始瘦身种子任务...")
+        thinned_count = 0
+        for torrent in self._qb.torrents:
+
+            # 跳过已完成任务
+            if torrent.completed:
+                continue
+
+            # 跳过非大包种子
+            if torrent.size < self._config.brush.torrent_max_size:
+                continue
+
+            files = self._qb.get_torrent_files(torrent.hash)
+            all_file_ids = [file['index'] for file in files]
+
+            current_size = sum([file['size']
+                               for file in files if file['priority'] != 0])
+
+            download_file_ids = []
+            for file in files:
+                if file['priority'] != 0:
+                    if current_size > self._config.brush.torrent_max_size:
+                        # 超出了大小限制，将文件设置为不下载
+                        file['priority'] = 0
+                        current_size -= file['size']
+                    else:
+                        download_file_ids.append(file['index'])
+
+            no_download_file_ids = list(
+                set(all_file_ids) - set(download_file_ids))
+
+            self._qb.set_no_download_files(torrent.hash, no_download_file_ids)
+            logger.debug(
+                f"{torrent.name}瘦身完成，下载文件数:{len(download_file_ids)}, 不下载文件数:{len(no_download_file_ids)}")
+            thinned_count += 1
+
+        logger.info(f"瘦身种子任务完成，本次瘦身种子数:{thinned_count}")
+        # logger.debug(torrent.size)
+
 
 # 刷流逻辑
 class BrushService():
@@ -211,7 +259,7 @@ class BrushService():
             torrent_rename = f'{torrent.name}__meta.{torrent.site}.{torrent.id}.endTime.{torrent.free_end_time.strftime("%Y-%m-%d-%H:%M:%S")}'
             res = self._qb.download_torrent_url(torrent_link, torrent_rename)
             if res:
-                logger.info(f"add torrent {torrent} success")
+                logger.debug(f"add torrent {torrent} success")
                 self._set_brushed(torrent)
 
             # return res
@@ -223,23 +271,23 @@ class BrushService():
 
         # 检查当前qb下载器的剩余空间
         if self.qb_free_space_size < self._config.brush.min_disk_space:
-            logger.warning(f"qb剩余空间不足，停止刷流")
+            logger.info(f"qb剩余空间不足，停止刷流")
             return
 
         # 检查过去一段时间内，qb的下载速度是否超过配置
         if self.last_cycle_max_dlspeed > self._config.brush.expect_download_speed:
-            logger.warning(f"qb下载速度超过配置，停止刷流")
+            logger.info(f"qb下载速度超过配置，停止刷流")
             return
 
         # 检查过去一段时间内，qb的上传速度是否超过配置
         if self.last_cycle_average_upspeed > self._config.brush.expect_upload_speed:
-            logger.warning(f"qb上传速度已达到期望值，停止刷流")
+            logger.info(f"qb上传速度已达到期望值，停止刷流")
             return
 
         # 检查当前刷流任务个数, 同时计算出还需要添加的刷流任务数
         uncompleted_count = self.uncompleted_count
         if uncompleted_count >= self._config.brush.max_downloading_torrents:
-            logger.warning(f"qb中刷流任务数已达到配置，停止刷流")
+            logger.info(f"qb中刷流任务数已达到配置，停止刷流")
             return
         need_add_count = self._config.brush.max_downloading_torrents - uncompleted_count
 
@@ -247,4 +295,4 @@ class BrushService():
         torrents = self.get_brush_torrent(need_add_count)
         self.add_brush_torrent(torrents)
 
-        logger.info(f"刷流完成...")
+        logger.info(f"刷流完成,添加种子数:{len(torrents)}")
