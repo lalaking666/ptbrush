@@ -36,6 +36,7 @@ class BaseSiteSpider:
                     headers=self.headers,
                     cookies=self.cookie,
                     data=data,
+                    timeout=(30,30)
                 )
                 return response
             except:
