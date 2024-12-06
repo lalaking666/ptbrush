@@ -31,6 +31,10 @@ password = ""
 # M-Team配置示例，请自行替换x-api-key参数
 [[sites]]
 name = "M-Team"
+
+[sites.options]
+free_only = false
+
 [[sites.headers]]
 key = "x-api-key"
 value = "xxxxx"

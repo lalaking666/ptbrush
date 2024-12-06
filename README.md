@@ -77,6 +77,8 @@
     # M-Team配置示例，请自行替换x-api-key参数
     [[sites]]
     name = "M-Team"
+    [sites.options]
+    free_only = false  # 是否只下载免费种子，默认false
     [[sites.headers]]
     key = "x-api-key"
     value = "xxxxx"

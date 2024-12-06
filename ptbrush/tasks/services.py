@@ -33,7 +33,7 @@ class PtTorrentService():
         for site in sites:
             logger.debug(f'开始处理站点:{site.name}')
             torrent_fetcher = TorrentFetch(
-                site.name, cookie=site.cookie, headers=site.headers
+                site.name, cookie=site.cookie, headers=site.headers, options=site.options
             )
             for torrent in torrent_fetcher.free_torrents:
                 logger.debug(f"从{site.name}抓取到种子: {torrent.name}")

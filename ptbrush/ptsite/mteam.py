@@ -111,7 +111,7 @@ class MTeamSpider(BaseSiteSpider):
         """
         if item.get("status").get("discount") in ["FREE", "_2X_FREE"]:
             return True
-        if item.get("status").get("toppingLevel") == "1":
+        if not self.options.free_only and item.get("status").get("toppingLevel") == "1":
             return True
         return False
 

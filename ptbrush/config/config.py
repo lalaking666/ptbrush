@@ -18,10 +18,13 @@ class HeaderParam(BaseModel):
     key: str
     value: str
 
+class OptionParam(BaseModel):
+    free_only: Optional[bool] = False  # 是否只获取免费种子
 
 class SiteModel(BaseModel):
     name: str
     cookie: Optional[str] = ""
+    options: Optional[OptionParam] = OptionParam()
     headers: Optional[List[HeaderParam]] = []
 
 

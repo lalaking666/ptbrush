@@ -11,13 +11,14 @@ from typing import Any, Generator, List
 
 import requests
 
-from config.config import HeaderParam
+from config.config import HeaderParam, OptionParam
 from model import Torrent
 
 
 class BaseSiteSpider:
 
-    def __init__(self, cookie: str, headers: List[HeaderParam] = []):
+    def __init__(self, cookie: str, headers: List[HeaderParam] = [], options: OptionParam = OptionParam()):
+        self.options = options
         self.cookie = cookie
         # self.headers = headers
         self.headers = {
@@ -57,8 +58,9 @@ class TorrentFetch:
 
     SITE_SPIDER_MAP = {"M-Team": MTeamSpider}
 
-    def __init__(self, site: str, cookie: str, headers: List[HeaderParam] = []):
+    def __init__(self, site: str, cookie: str, headers: List[HeaderParam] = [], options: OptionParam = OptionParam()):
         self.site = site
+        self.options = options
         self.cookie = cookie
         self.headers = headers
         spider_class = self.SITE_SPIDER_MAP.get(self.site)
@@ -66,7 +68,7 @@ class TorrentFetch:
             raise ValueError(f"Unknown site: {self.site}")
 
         self._spider_class: BaseSiteSpider = spider_class(
-            self.cookie, self.headers)
+            self.cookie, self.headers, self.options)
 
     @property
     def free_torrents(self) -> Generator[Torrent, Torrent, Torrent]:
