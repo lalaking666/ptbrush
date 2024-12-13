@@ -48,7 +48,6 @@ class PtTorrentService():
                          size=torrent.size, free_end_time=torrent.free_end_time, score=torrent.score,
                          ).on_conflict(conflict_target=[TorrentDB.site, TorrentDB.torrent_id], update=dict(
                              updated_time=updated_time, leechers=torrent.leechers, seeders=torrent.seeders, free_end_time=torrent.free_end_time, score=torrent.score)).execute()
-        pass
 
 
 # 从qb获取种子状态、以及下载器状态、 清理临近过期的种子
@@ -268,7 +267,7 @@ class BrushService():
         """
         刷流入口
         """
-
+        
         # 检查当前qb下载器的剩余空间
         if self.qb_free_space_size < self._config.brush.min_disk_space:
             logger.info(f"qb剩余空间不足，停止刷流")

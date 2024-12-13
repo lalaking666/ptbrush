@@ -5,6 +5,7 @@ charset-normalizer==3.4.0 ; python_version >= "3.10" and python_version < "4.0"
 click==8.1.7 ; python_version >= "3.10" and python_version < "4.0"
 colorama==0.4.6 ; python_version >= "3.10" and python_version < "4.0" and (platform_system == "Windows" or sys_platform == "win32")
 idna==3.10 ; python_version >= "3.10" and python_version < "4.0"
+jsonpath==0.82.2 ; python_version >= "3.10" and python_version < "4.0"
 loguru==0.7.2 ; python_version >= "3.10" and python_version < "4.0"
 packaging==24.1 ; python_version >= "3.10" and python_version < "4.0"
 peewee==3.17.7 ; python_version >= "3.10" and python_version < "4.0"
@@ -23,4 +24,3 @@ tzlocal==5.2 ; python_version >= "3.10" and python_version < "4.0"
 urllib3==2.2.3 ; python_version >= "3.10" and python_version < "4.0"
 wcwidth==0.2.13 ; python_version >= "3.10" and python_version < "4.0"
 win32-setctime==1.1.0 ; python_version >= "3.10" and python_version < "4.0" and sys_platform == "win32"
-pydantic-settings[toml]

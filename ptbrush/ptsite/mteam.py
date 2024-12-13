@@ -11,11 +11,12 @@
 from datetime import datetime, timedelta
 import json
 from time import sleep
-from typing import Generator
+from typing import Generator, Optional
 
 from loguru import logger
 from model import Torrent
 from ptsite import BaseSiteSpider
+import jsonpath
 
 
 class MTeamSpider(BaseSiteSpider):
@@ -55,7 +56,7 @@ class MTeamSpider(BaseSiteSpider):
             "sortDirection": "DESC",
             "sortField": "CREATED_DATE",
         },
-        # # 综合最新
+        # 综合最新
         {
             "categories": [],
             "mode": "normal",
@@ -77,12 +78,7 @@ class MTeamSpider(BaseSiteSpider):
         },
     ]
 
-    # MODES = ["adult", "", "normal", "movie", "music", "tvshow", "rankings"]
-    # SORT_FIELDS = [
-    #     "CREATED_DATE",
-    #     "LEECHERS",
-    # ]
-    # DISCOUNTS = ["FREE"]
+    
 
     def free_torrents(self) -> Generator[Torrent, Torrent, Torrent]:
         for body in self.BODYS:
@@ -97,36 +93,44 @@ class MTeamSpider(BaseSiteSpider):
             data = json.loads(text).get("data", {}).get("data")
             if data:
                 for item in data:
-                    # if item.get("status").get("discount") != discount:
-                    #     # mteam的接口不一定靠谱
-                    #     continue
-                    if self._is_free_torrent(item):
+
+                    # free种子，且有free结束时间
+                    if self._is_free_torrent(item) and self._parse_free_end_time(item):
                         yield self._parse_torrent(item)
+
+            # 睡会，别请求太快
             sleep(3)
+
     def _is_free_torrent(self, item: dict) -> bool:
         """
-        规则如下：
+        满足以下任意即为free,规则如下：
         1. discount = FREE or _2X_FREE
-        2. toppingLevel = 1
+        2. mallSingleFree.status = ONGOING
         """
-        if item.get("status").get("discount") in ["FREE", "_2X_FREE"]:
+        discounts = jsonpath.jsonpath(item, "$.status.discount")
+
+        mall_single_free_statuss = jsonpath.jsonpath(
+            item, "$.status.mallSingleFree.status")
+
+        if discounts and discounts[0] in ["FREE", "_2X_FREE"]:
             return True
-        if item.get("status").get("toppingLevel") == "1":
+        if mall_single_free_statuss and mall_single_free_statuss[0] == "ONGOING":
             return True
         return False
 
+    def _parse_free_end_time(self, item:dict)->Optional[str]:
+        discount_end_times_1 = jsonpath.jsonpath(item, "$.status.discountEndTime")
+        if discount_end_times_1 and discount_end_times_1[0]:
+            return discount_end_times_1[0]
+        discount_end_times_2 = jsonpath.jsonpath(item, "$.status.mallSingleFree.endDate")
+        if discount_end_times_2 and discount_end_times_2[0]:
+            return discount_end_times_2[0]
+        return None
+        
+
     def _parse_torrent(self, item: dict) -> Torrent:
-        free_end_time = datetime.now() + timedelta(days=1)
-        if item.get("status").get("discount") in ["FREE", "_2X_FREE"]:
-            if item.get("status").get("discountEndTime"):
-                free_end_time = datetime.strptime(
-                    item.get("status").get("discountEndTime"), "%Y-%m-%d %H:%M:%S"
-                )
-        if item.get("status").get("toppingLevel") == "1":
-            if item.get("status").get("toppingEndTime"):
-                free_end_time = datetime.strptime(
-                    item.get("status").get("toppingEndTime"), "%Y-%m-%d %H:%M:%S"
-                )
+        free_end_time_str = self._parse_free_end_time(item)
+        free_end_time = datetime.strptime(free_end_time_str, "%Y-%m-%d %H:%M:%S")
 
         torrent = Torrent(
             name=item.get("name"),
@@ -155,4 +159,3 @@ class MTeamSpider(BaseSiteSpider):
         torrent_url = json.loads(response.text).get("data")
         return torrent_url
 
-    pass
