@@ -31,7 +31,7 @@ def main():
     scheduler.add_job(tasks.fetch_qb_status, "interval", seconds=15)
     scheduler.add_job(tasks.fetch_qb_torrents, "interval", seconds=60)
     scheduler.add_job(tasks.fetch_pt_torrents, "interval", minutes=15, next_run_time=datetime.now()+timedelta(seconds=10))
-    scheduler.add_job(tasks.clean_long_time_no_activate_torrents, "interval", hour=1)
+    scheduler.add_job(tasks.clean_long_time_no_activate_torrents, "interval", hours=1)
     logger.info(f"开始运行，稍后你可以在日志文件中查看日志，观察运行情况...")
     scheduler.start()
 
