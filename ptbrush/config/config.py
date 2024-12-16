@@ -59,7 +59,10 @@ class BrushConfig(BaseModel):
     # 单个种子的文件大小限制，超过此限制后，会将种子中的部分文件设置为不下载。
     # 单位为：B，默认值 50GiB，一般不需要修改
     torrent_max_size:int = 53687091200
-
+    
+    # 允许种子最大的无活跃(无下载也无上传)时间，超过此时间将会被删除，单位为:小时，默认24
+    max_no_activate_time: int = 24
+    
 class PTBrushConfig(BaseSettings):
     downloader: Optional[QBConfig] = None
     sites: Optional[List[SiteModel]] = []

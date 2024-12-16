@@ -136,6 +136,8 @@ class QBittorrent:
         )
         return res == "Ok."
 
+    def delete_torrent(self, torrent_hash: str):
+        self.qb.torrents_delete(delete_files=True, torrent_hashes=[torrent_hash])
     
     def cancel_download(self, torrent_hash:str):
         """
@@ -161,62 +163,3 @@ class QBittorrent:
         """
         self.qb.torrents_file_priority(hash, file_ids=file_ids, priority=0)
         return True
-
-    # def clean_torrent(self, hash: str) -> bool:
-    #     """
-    #     将种子的所有文件大小小于500M的文件，全部设为不下载, 并把不需要下载文件打上需要删除标签
-
-    #     """
-    #     files = self._get_torrent_files(hash)
-    #     no_download_file_ids = [
-    #         file["index"] for file in files if file["size"] < 1024 * 1024 * 1024 * 0.5
-    #     ]
-    #     if not no_download_file_ids:
-    #         return True
-    #     self._set_no_download_files(hash, no_download_file_ids)
-    #     for fid in no_download_file_ids:
-    #         # 本来想的是先重命名，然后再开个线程去删，但貌似重命名后文件就没了，应该是被删除了
-    #         try:
-    #             self.qb.torrents_rename_file(
-    #                 hash, fid, new_file_name=f"need_delete_{uuid.uuid1().hex}"
-    #             )
-    #         except qbittorrentapi.exceptions.Conflict409Error:
-    #             pass
-    #     return True
-
-    # def _extract_torrent_task(self, torrent) -> TorrentTask:
-    #     download_speed = 0
-    #     if torrent.get("state") == "downloading":
-    #         status = 0
-    #         download_speed = torrent.dlspeed
-    #     elif torrent.get("progress") == 1:
-    #         status = 2
-    #     else:
-    #         status = 1
-    #     content_path = str(Path(torrent.save_path))
-    #     files = [
-    #         TorrentTaskFile(
-    #             size=file.size / 1024 / 1024 / 1024,
-    #             path=content_path + "/" + file.name,
-    #         )
-    #         for file in torrent.files
-    #     ]
-    #     return TorrentTask(
-    #         # size: float
-    #         # files: Optional[List[TorrentTaskFile]]=[]
-    #         download_speed=download_speed,
-    #         files=files,
-    #         status=status,
-    #         name=torrent.name,
-    #         created_time=datetime.fromtimestamp(torrent.added_on),
-    #         progress=torrent.progress,
-    #         hash=torrent.hash,
-    #         completed_time=datetime.fromtimestamp(torrent.completion_on),
-    #         size=torrent.size / 1024 / 1024 / 1024,
-    #     )
-
-    # def get_torrent_by_hash(self, hash: str) -> TorrentTask:
-    #     e = self.qb.torrents_info(torrent_hashes=[hash])
-    #     if e:
-    #         i = e[0]
-    #         return self._extract_torrent_task(i)

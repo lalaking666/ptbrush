@@ -10,11 +10,12 @@
 
 
 from datetime import datetime, timedelta
+import re
 from typing import List, Optional
 from loguru import logger
 from config.config import PTBrushConfig, SiteModel
 from model import Torrent
-from db import Torrent as TorrentDB, BrushTorrent, QBStatus
+from db import Torrent as TorrentDB, BrushTorrent, QBStatus, database
 from qbittorrent import QBittorrent
 from ptsite import TorrentFetch
 import peewee
@@ -82,6 +83,7 @@ class QBTorrentService():
         logger.info(f"开始抓取qb中种子状态")
         count = 0
         for torrent in self._qb.torrents:
+            count += 1
             torrent_db, flag = TorrentDB.get_or_create(
                 site=torrent.site, torrent_id=torrent.torrent_id, defaults={'name': torrent.name, 'brushed': True, 'free_end_time': torrent.free_end_time})
             torrent_db.brushed = True
@@ -96,6 +98,72 @@ class QBTorrentService():
             logger.debug(f"Record brush torrent status: {torrent.name}")
         logger.info(f"抓取qb中种子状态完成，本轮共记录{count}个种子状态")
 
+    def clean_long_time_no_activate(self):
+        """
+        清理长时间未活动的种子
+        """
+        logger.info(f"开始清理长时间未活动的种子")
+        qb_torrents = self._qb.torrents
+
+
+                
+        # 统计出所有正在刷流以及历史刷流的种子ID
+        brush_torrents = BrushTorrent.select().group_by(BrushTorrent.torrent)
+        torrents = set([brush_torrent.torrent for brush_torrent in brush_torrents])
+
+        
+        # 处理每个torrent
+        for torrent in torrents:
+            # 查询出所有记录
+            brush_torrent_records = list(BrushTorrent.select().where(BrushTorrent.torrent == torrent).order_by(BrushTorrent.created_time.asc()))
+            if not brush_torrent_records:
+                continue
+
+            # 查询对应的qb中的种子
+            target_qb_torrent = [i for i in qb_torrents if f"{torrent.site}.{torrent.torrent_id}" in i.name]
+            if not target_qb_torrent:
+                # qb中已经删除了此种子，则删除记录
+                BrushTorrent.delete().where(BrushTorrent.torrent == torrent).execute()
+                continue
+            target_qb_torrent = target_qb_torrent[0]
+            
+            latest_record = brush_torrent_records.pop()
+
+            if latest_record.upspeed != 0 or latest_record.dlspeed != 0:
+                # 跳过正在活动的种子
+                continue
+            
+            end_time = latest_record.created_time
+            # 统计出无活动的持续时间
+            while brush_torrent_records:
+                latest_record = brush_torrent_records.pop()
+                if latest_record.upspeed != 0 or latest_record.dlspeed != 0:
+                    break
+            start_time = latest_record.created_time
+            if end_time - start_time > timedelta(hours=24):
+                logger.info(f"Delete torrent where no activate for a long time {self._config.brush.max_no_activate_time}h {torrent.name}")
+                BrushTorrent.delete().where(BrushTorrent.torrent == torrent).execute()
+
+                # 根据torrent名称来从qbittorrent中读取hash
+                logger.info(f"Delete torrent in qbittorrent by name {torrent.name}")
+                self._qb.delete_torrent(target_qb_torrent.hash)
+                # torrent.delete_instance()
+            
+            
+            
+
+        logger.info(f"开始清理brushtorrent表7天前的记录数据...")
+        BrushTorrent.delete().where(BrushTorrent.created_time < (datetime.now() - timedelta(days=7))).execute()
+
+        # 对数据库瘦身
+        database.execute_sql('VACUUM;')
+        
+        logger.info("长时间未活动种子，清理完成.")
+        # return avg_upspeed if avg_upspeed != None else 9999999999999
+        
+    
+    
+    
     def clean_will_expired(self):
         """
         清理临近过期的种子
@@ -243,6 +311,8 @@ class BrushService():
         torrent_db.save()
 
     def add_brush_torrent(self, torrents: List[Torrent]):
+
+        
         for torrent in torrents:
             site_config = self._get_site_config(torrent.site)
             if not site_config:
