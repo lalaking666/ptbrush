@@ -10,7 +10,7 @@ python = "^3.10"
 click = "^8.1.7"
 qbittorrent-api = "^2024.10.68"
 pydantic = "^2.9.2"
-pydantic-settings = "^2.6.1"
+pydantic-settings = {extras = ["toml"], version = "^2.7.0"}
 loguru = "^0.7.2"
 requests = "^2.32.3"
 prettytable = "^3.12.0"
