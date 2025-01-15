@@ -90,7 +90,12 @@ class MTeamSpider(BaseSiteSpider):
                 method="POST",
                 data=json.dumps(body),
             ).text
-            data = json.loads(text).get("data", {}).get("data")
+            try:
+                data = json.loads(text).get("data", {}).get("data")
+            except:
+                logger.error(f"mt search error:{text}, will sleep 60s")
+                sleep(60)
+                continue
             if data:
                 for item in data:
 
@@ -99,7 +104,7 @@ class MTeamSpider(BaseSiteSpider):
                         yield self._parse_torrent(item)
 
             # 睡会，别请求太快
-            sleep(3)
+            sleep(60)
 
     def _is_free_torrent(self, item: dict) -> bool:
         """
