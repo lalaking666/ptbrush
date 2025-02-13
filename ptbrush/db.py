@@ -62,8 +62,7 @@ class QBStatus(BaseModel):
     up_total_size = peewee.BigIntegerField(default=0)  # 上传总大小
     dl_total_size = peewee.BigIntegerField(default=0)  # 下载总大小
 
-    free_space_size: int
-
+    free_space_size = peewee.BigIntegerField(default=0)  # 剩余空间大小
 
 # 建表
 database.create_tables([Torrent, BrushTorrent, QBStatus])
