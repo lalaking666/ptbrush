@@ -66,7 +66,6 @@ class QBTorrentService():
         qb_status = self._qb.status
         logger.info(f"Record qb status: {qb_status}")
         QBStatus.create(
-            free_space_size=qb_status.free_space_size,
             dlspeed=qb_status.dlspeed,
             upspeed=qb_status.upspeed,
 
@@ -337,20 +336,20 @@ class BrushService():
         """
         刷流入口
         """
-        
+        logger.info(f"刷流任务开始...")
         # 检查当前qb下载器的剩余空间
         if self.qb_free_space_size < self._config.brush.min_disk_space:
-            logger.info(f"qb剩余空间不足，停止刷流")
+            logger.info(f"qb剩余空间不足，停止刷流，当前剩余空间为:{self.qb_free_space_size}")
             return
 
         # 检查过去一段时间内，qb的下载速度是否超过配置
         if self.last_cycle_max_dlspeed > self._config.brush.expect_download_speed:
-            logger.info(f"qb下载速度超过配置，停止刷流")
+            logger.info(f"qb下载速度超过配置，停止刷流, 过去一段时间内，qb的最大下载速度为:{self.last_cycle_max_dlspeed}")
             return
 
         # 检查过去一段时间内，qb的上传速度是否超过配置
         if self.last_cycle_average_upspeed > self._config.brush.expect_upload_speed:
-            logger.info(f"qb上传速度已达到期望值，停止刷流")
+            logger.info(f"qb上传速度已达到期望值，停止刷流, 过去一段时间内，qb的平均上传速度为:{self.last_cycle_average_upspeed}")
             return
 
         # 检查当前刷流任务个数, 同时计算出还需要添加的刷流任务数
