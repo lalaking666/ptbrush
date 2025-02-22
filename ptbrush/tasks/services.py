@@ -139,7 +139,7 @@ class QBTorrentService():
                 if latest_record.upspeed != 0 or latest_record.dlspeed != 0:
                     break
             start_time = latest_record.created_time
-            if end_time - start_time > timedelta(hours=24):
+            if end_time - start_time > timedelta(hours=self._config.brush.max_no_activate_time):
                 logger.info(f"Delete torrent where no activate for a long time {self._config.brush.max_no_activate_time}h {torrent.name}")
                 BrushTorrent.delete().where(BrushTorrent.torrent == torrent).execute()
 

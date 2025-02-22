@@ -19,7 +19,7 @@ from config.config import BrushConfig, PTBrushConfig
 # 设置不打印 debug 级别的日志，最小级别为 INFO
 logger.remove()  # 移除默认的 handler
 logger.add(Path(__file__).parent / 'data' / "ptbrush.log", rotation="10 MB", retention="10 days", level="INFO")
-config = PTBrushConfig()
+
 def check_work_time(brush_config:BrushConfig):
     """检查当前是否在工作时间内"""
     
@@ -30,7 +30,9 @@ def check_work_time(brush_config:BrushConfig):
 
 def run_if_work_time(func):
     """只在工作时间内运行的装饰器"""
+
     def wrapper():
+        config = PTBrushConfig()
         if check_work_time(config.brush):
             func()
     return wrapper
