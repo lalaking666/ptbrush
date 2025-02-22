@@ -85,11 +85,11 @@ def main():
         minute="*/15"
     )
     
-    # 每小时清理一次长时间无活跃的种子
+    # 每3分钟清理一次长时间无活跃的种子
     scheduler.add_job(
         tasks.clean_long_time_no_activate_torrents, 
         "cron", 
-        minute="0"
+        minute="*/3"
     )
     
     logger.info(f"开始运行，稍后你可以在日志文件中查看日志，观察运行情况...")
