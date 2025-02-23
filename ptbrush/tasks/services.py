@@ -337,31 +337,31 @@ class BrushService():
 
             # return res
 
-    def brush(self):
+    def brush(self)->int:
         """
-        刷流入口
+        刷流入口,返回添加种子的个数
         """
         logger.info(f"刷流任务开始...")
         # 检查当前qb下载器的剩余空间
         if self.qb_free_space_size < self._config.brush.min_disk_space:
             logger.info(f"qb剩余空间不足，停止刷流，当前剩余空间为:{self.qb_free_space_size}")
-            return
+            return 0
 
         # 检查过去一段时间内，qb的下载速度是否超过配置
         if self.last_cycle_max_dlspeed > self._config.brush.expect_download_speed:
             logger.info(f"qb下载速度超过配置，停止刷流, 过去一段时间内，qb的最大下载速度为:{self.last_cycle_max_dlspeed}")
-            return
+            return 0
 
         # 检查过去一段时间内，qb的上传速度是否超过配置
         if self.last_cycle_average_upspeed > self._config.brush.expect_upload_speed:
             logger.info(f"qb上传速度已达到期望值，停止刷流, 过去一段时间内，qb的平均上传速度为:{self.last_cycle_average_upspeed}")
-            return
+            return 0
 
         # 检查当前刷流任务个数, 同时计算出还需要添加的刷流任务数
         uncompleted_count = self.uncompleted_count
         if uncompleted_count >= self._config.brush.max_downloading_torrents:
             logger.info(f"qb中刷流任务数已达到配置，停止刷流")
-            return
+            return 0
         need_add_count = self._config.brush.max_downloading_torrents - uncompleted_count
 
         # 从种子库中取出评分较高的种子添加至QB中进行刷流
@@ -369,3 +369,6 @@ class BrushService():
         self.add_brush_torrent(torrents)
 
         logger.info(f"刷流完成,添加种子数:{len(torrents)}")
+        return len(torrents)
+
+

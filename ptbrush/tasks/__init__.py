@@ -11,6 +11,7 @@
 # here put the import lib
 from datetime import datetime, timedelta
 import sys
+from time import sleep
 from loguru import logger
 from db import BrushTorrent, database
 from tasks.services import PtTorrentService, QBTorrentService, BrushService
@@ -31,7 +32,12 @@ def fetch_qb_status():
 
 # 刷流
 def brush():
-    BrushService().brush()
+    add_torrent_count = BrushService().brush()
+    if add_torrent_count > 0:
+        logger.info(f"1分钟后,开始拆包任务...")
+        sleep(60)
+        QBTorrentService().torrent_thinned()
+    
 
 # 清理长时间没有上传的种子
 def clean_long_time_no_activate_torrents():
