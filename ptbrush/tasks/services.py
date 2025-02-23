@@ -139,8 +139,13 @@ class QBTorrentService():
                 if latest_record.upspeed != 0 or latest_record.dlspeed != 0:
                     break
             start_time = latest_record.created_time
-            if end_time - start_time > timedelta(hours=self._config.brush.max_no_activate_time):
-                logger.info(f"Delete torrent where no activate for a long time {self._config.brush.max_no_activate_time}h {torrent.name}")
+            if self._config.brush.max_no_activate_time < 5:
+                logger.warning(f"max_no_activate_time is less than 5, use 5 as default")
+                max_no_activate_time = 5
+            else:
+                max_no_activate_time = self._config.brush.max_no_activate_time
+            if end_time - start_time > timedelta(minutes=max_no_activate_time):
+                logger.info(f"Delete torrent where no activate for a long time {max_no_activate_time} minutes {torrent.name}")
                 BrushTorrent.delete().where(BrushTorrent.torrent == torrent).execute()
 
                 # 根据torrent名称来从qbittorrent中读取hash

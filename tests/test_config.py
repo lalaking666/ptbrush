@@ -89,7 +89,7 @@ def test_brush_config_defaults():
     assert config.max_downloading_torrents == 6
     assert config.upload_cycle == 600
     assert config.download_cycle == 600
-    assert config.max_no_activate_time == 24 
+    assert config.max_no_activate_time == 30
 
 def test_parse_time_ranges():
     # Test single range

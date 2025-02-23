@@ -89,7 +89,7 @@ def main():
     scheduler.add_job(
         tasks.clean_long_time_no_activate_torrents, 
         "cron", 
-        minute="*/3"
+        minute="*"
     )
     
     logger.info(f"开始运行，稍后你可以在日志文件中查看日志，观察运行情况...")
