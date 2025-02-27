@@ -160,7 +160,21 @@ class MTeamSpider(BaseSiteSpider):
             url=f"https://{self.HOST}/{self.TORRENT_API}",
             method="POST",
             data={"id": str(torrent_id)},
+            timeout=120
         )
         torrent_url = json.loads(response.text).get("data")
         return torrent_url
 
+    def download_torrent_content(self, torrent_link:str)->Optional[bytes]:
+        """
+        获取种子内容
+        """
+        torrent_download_res = self.fetch(torrent_link, timeout=30, verify=False)
+        try:
+            text = torrent_download_res.text
+            json.loads(text)
+            logger.error(f"mt download torrent link error:{text} link:{torrent_link}")
+            return None
+        except:
+            return torrent_download_res.content
+                

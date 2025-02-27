@@ -316,13 +316,12 @@ class BrushService():
 
     def add_brush_torrent(self, torrents: List[Torrent]):
 
-        
         for torrent in torrents:
             site_config = self._get_site_config(torrent.site)
             if not site_config:
                 logger.error(f"torrent site config empty, {torrent}")
                 continue
-
+            
             torrent_fetch = TorrentFetch(
                 torrent.site, site_config.cookie, site_config.headers)
             torrent_link = torrent_fetch.parse_torrent_link(torrent.id)
@@ -330,7 +329,12 @@ class BrushService():
                 logger.error(f"torrent parse link empty, {torrent}")
                 continue
             torrent_rename = f'{torrent.name}__meta.{torrent.site}.{torrent.id}.endTime.{torrent.free_end_time.strftime("%Y-%m-%d-%H:%M:%S")}'
-            res = self._qb.download_torrent_url(torrent_link, torrent_rename)
+            torrent_content = torrent_fetch.download_torrent_content(torrent_link)
+            if not torrent_content:
+                logger.error(f"torrent content empty, {torrent}")
+                continue
+            
+            res = self._qb.download_torrent_url(torrent_content, torrent_rename)
             if res:
                 logger.debug(f"add torrent {torrent} success")
                 self._set_brushed(torrent)
@@ -363,6 +367,7 @@ class BrushService():
             logger.info(f"qb中刷流任务数已达到配置，停止刷流")
             return 0
         need_add_count = self._config.brush.max_downloading_torrents - uncompleted_count
+        logger.info(f"qb中刷流任务数:{uncompleted_count}, 还需要添加的种子数:{need_add_count}")
 
         # 从种子库中取出评分较高的种子添加至QB中进行刷流
         torrents = self.get_brush_torrent(need_add_count)

@@ -124,12 +124,12 @@ class QBittorrent:
 
     def download_torrent_url(
         self,
-        torrent_url: str,
+        torrent_content: bytes,
         torrent_name: str,
     ) -> bool:
-        torrent_download_res = requests.get(torrent_url, timeout=30, verify=False)
+        
         res = self.qb.torrents_add(
-            torrent_files=torrent_download_res.content,
+            torrent_files=torrent_content,
             category=self.category,
             rename=torrent_name,
             use_auto_torrent_management=True,

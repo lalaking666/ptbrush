@@ -7,7 +7,7 @@
 @Desc    :   None
 """
 import abc
-from typing import Any, Generator, List
+from typing import Any, Generator, List, Optional
 
 import requests
 
@@ -51,6 +51,9 @@ class BaseSiteSpider:
     def parse_torrent_link(self, torrent_id: str) -> str:
         pass
 
+    @abc.abstractmethod
+    def download_torrent_content(self, torrent_link:str)->Optional[bytes]:
+        pass
 
 class TorrentFetch:
     from ptsite.mteam import MTeamSpider
@@ -76,3 +79,6 @@ class TorrentFetch:
 
     def parse_torrent_link(self, torrent_id: str) -> str:
         return self._spider_class.parse_torrent_link(torrent_id)
+
+    def download_torrent_content(self, torrent_link:str)->Optional[bytes]:
+        return self._spider_class.download_torrent_content(torrent_link)
