@@ -92,7 +92,7 @@
     torrent_max_size = "50GiB"
     
     # 允许种子最大的无活跃(无下载也无上传)时间，超过此时间将会被删除，单位为:分钟，默认30分钟
-    max_no_activate_time: int = 30
+    max_no_activate_time = 30
     
     # 下载器设置，仅支持qb
     [downloader]
