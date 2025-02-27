@@ -27,7 +27,7 @@ class BaseSiteSpider:
         for i in headers:
             self.headers[i.key] = i.value
 
-    def fetch(self, url: str, method: str = "GET", data: Any = "") -> requests.Response:
+    def fetch(self, url: str, method: str = "GET", data: Any = "", *args, **kwargs) -> requests.Response:
         for i in range(3):
             try:
                 response = requests.request(
@@ -36,7 +36,9 @@ class BaseSiteSpider:
                     headers=self.headers,
                     cookies=self.cookie,
                     data=data,
-                    timeout=(30,30)
+                    timeout=(30,30),
+                    *args,
+                    **kwargs
                 )
                 return response
             except:

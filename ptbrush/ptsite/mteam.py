@@ -160,7 +160,6 @@ class MTeamSpider(BaseSiteSpider):
             url=f"https://{self.HOST}/{self.TORRENT_API}",
             method="POST",
             data={"id": str(torrent_id)},
-            timeout=120
         )
         torrent_url = json.loads(response.text).get("data")
         return torrent_url
@@ -169,7 +168,7 @@ class MTeamSpider(BaseSiteSpider):
         """
         获取种子内容
         """
-        torrent_download_res = self.fetch(torrent_link, timeout=30, verify=False)
+        torrent_download_res = self.fetch(torrent_link, verify=False)
         try:
             text = torrent_download_res.text
             json.loads(text)
