@@ -82,7 +82,7 @@ class MTeamSpider(BaseSiteSpider):
 
     def free_torrents(self) -> Generator[Torrent, Torrent, Torrent]:
         for body in self.BODYS:
-            logger.debug(
+            logger.info(
                 f"searching mt body:{json.dumps(body, separators=(',', ':'), ensure_ascii=False)}"
             )
             text = self.fetch(

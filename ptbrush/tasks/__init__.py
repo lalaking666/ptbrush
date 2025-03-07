@@ -5,15 +5,11 @@
 @Time    :   2024/11/04 10:34:05
 @Author  :   huihuidehui 
 @Version :   1.0
-@Contact :   kanhuihui@163.com
 '''
 
 # here put the import lib
-from datetime import datetime, timedelta
-import sys
 from time import sleep
 from loguru import logger
-from db import BrushTorrent, database
 from tasks.services import PtTorrentService, QBTorrentService, BrushService
 
 

@@ -30,6 +30,9 @@
                 - PGID=1000
                 - UMASK=022
                 - TZ=Asia/Shanghai
+                - WEB_PORT=8000  # Optional: change web interface port
+            ports:
+                - "8000:8000"  # Map web interface port
             container_name: ptbrush
             image: 'huihuidehui/ptbrush:latest'
     ```
