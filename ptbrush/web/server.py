@@ -8,7 +8,7 @@
 
 # here put the import lib
 
-from ptbrush.web import create_app
+from web import create_app
 import threading
 
 def run_web_server(host='0.0.0.0', port=8000, debug=False):

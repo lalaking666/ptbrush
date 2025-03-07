@@ -1,8 +1,8 @@
 import pytest
-from ptbrush.config.config import parse_size, parse_speed, BrushConfig, parse_time_ranges
+from config.config import parse_size, parse_speed, BrushConfig, parse_time_ranges
 from datetime import time, datetime
 from unittest.mock import patch
-from ptbrush.main import check_work_time
+from main import check_work_time
 
 def test_parse_size():
     # Test integer input

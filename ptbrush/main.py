@@ -14,9 +14,9 @@ from apscheduler.executors.pool import ThreadPoolExecutor
 from loguru import logger
 import tasks as tasks
 from config.config import BrushConfig, PTBrushConfig
-from ptbrush.web.server import start_web_server_thread
+from web.server import start_web_server_thread
 import os
-from ptbrush.db import migrate_database
+from db import migrate_database
 
 # 设置不打印 debug 级别的日志，最小级别为 INFO
 logger.remove()  # 移除默认的 handler

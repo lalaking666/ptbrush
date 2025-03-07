@@ -13,7 +13,7 @@ def create_app():
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_key_for_ptbrush')
     
     # Register blueprints
-    from ptbrush.web.routes import main_bp
+    from web.routes import main_bp
     app.register_blueprint(main_bp)
     
     return app 

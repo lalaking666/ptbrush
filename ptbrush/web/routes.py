@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, jsonify, request
-from ptbrush.db import Torrent, BrushTorrent, QBStatus
-from ptbrush.model import Torrent as TorrentModel
+from db import Torrent, BrushTorrent, QBStatus
+from model import Torrent as TorrentModel
 import peewee
 from datetime import datetime, timedelta
 import json
@@ -98,7 +98,7 @@ def get_history():
 @main_bp.route('/api/config')
 def get_config():
     """Get current configuration"""
-    from ptbrush.config.config import PTBrushConfig
+    from config.config import PTBrushConfig
     
     try:
         config = PTBrushConfig()
