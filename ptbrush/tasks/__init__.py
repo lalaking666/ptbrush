@@ -8,11 +8,8 @@
 '''
 
 # here put the import lib
-from datetime import datetime, timedelta
-import sys
 from time import sleep
 from loguru import logger
-from db import BrushTorrent, database
 from tasks.services import PtTorrentService, QBTorrentService, BrushService
 
 

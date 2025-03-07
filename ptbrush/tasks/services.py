@@ -75,6 +75,34 @@ class QBTorrentService():
         )
         pass
 
+    def clean_will_expired(self):
+        """
+        清理临近过期的种子
+        """
+        logger.info(f'开始清理即将过期的种子')
+        count = 0
+        current_timestamp = datetime.now().timestamp()
+        # 截止时间戳，1小时后
+        # 当free时间不足1小时时，取消下载所有文件，但不删除种子，已下载的文件会继续做种.
+        expire_timestamp = current_timestamp + 3600
+        for torrent in self._qb.torrents:
+            if torrent.completed:
+                continue
+
+            free_timestamp = torrent.free_end_time.timestamp()
+            if free_timestamp > expire_timestamp:
+                continue
+
+            logger.info(
+                f"删除Free即将结束的种子，种子名称:{torrent.name}, Free结束时间:{torrent.free_end_time}")
+
+            # 直接删除种子
+            self._qb.cancel_download(torrent.hash)
+            count += 1
+
+        logger.info(f"清理即将过期的种子完成，本次删除种子数:{count}")
+
+    
     def fetcher(self):
         """
         获取所有正在刷流的种子，记录其信息
@@ -214,34 +242,6 @@ class BrushService():
         self._config = PTBrushConfig()
         self._qb = QBittorrent(self._config.downloader.url,
                                self._config.downloader.username, self._config.downloader.password)
-
-    
-    def clean_will_expired(self):
-        """
-        清理临近过期的种子
-        """
-        logger.info(f'开始清理即将过期的种子')
-        count = 0
-        current_timestamp = datetime.now().timestamp()
-        # 截止时间戳，1小时后
-        # 当free时间不足1小时时，取消下载所有文件，但不删除种子，已下载的文件会继续做种.
-        expire_timestamp = current_timestamp + 3600
-        for torrent in self._qb.torrents:
-            if torrent.completed:
-                continue
-
-            free_timestamp = torrent.free_end_time.timestamp()
-            if free_timestamp > expire_timestamp:
-                continue
-
-            logger.info(
-                f"删除Free即将结束的种子，种子名称:{torrent.name}, Free结束时间:{torrent.free_end_time}")
-
-            # 直接删除种子
-            self._qb.cancel_download(torrent.hash)
-            count += 1
-
-        logger.info(f"清理即将过期的种子完成，本次删除种子数:{count}")
 
     
     @property

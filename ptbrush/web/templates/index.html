@@ -203,14 +203,11 @@
             fetch(`/api/history?minutes=${minutes}`)
                 .then(response => response.json())
                 .then(data => {
-                    // 将速度从 B/s 转换为 MiB/s
-                    const upspeedMiB = data.upspeed.map(speed => speed / (1024 * 1024));
-                    const dlspeedMiB = data.dlspeed.map(speed => speed / (1024 * 1024));
-                    
+                    // 创建上传和下载速度的数据
                     const plotData = [
                         {
                             x: data.timestamps,
-                            y: upspeedMiB,
+                            y: data.upspeed.map(speed => speed / (1024 * 1024)),
                             type: 'scatter',
                             mode: 'lines',
                             name: '上传速度 (MiB/s)',
@@ -218,7 +215,7 @@
                         },
                         {
                             x: data.timestamps,
-                            y: dlspeedMiB,
+                            y: data.dlspeed.map(speed => speed / (1024 * 1024)),
                             type: 'scatter',
                             mode: 'lines',
                             name: '下载速度 (MiB/s)',
@@ -226,11 +223,13 @@
                         }
                     ];
                     
+                    // 修改布局配置，增加底部边距并调整时间标签
                     const layout = {
-                        margin: {t: 10, r: 10, b: 40, l: 60},
+                        margin: {l: 50, r: 30, t: 30, b: 80}, // 增加底部边距
                         xaxis: {
                             title: '时间',
-                            tickangle: -45
+                            // tickangle: -45, // 倾斜标签
+                            automargin: true // 自动调整边距
                         },
                         yaxis: {
                             title: '速度 (MiB/s)'
