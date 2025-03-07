@@ -64,7 +64,7 @@ class QBittorrent:
         return QBittorrentStatus(
             dl_total_size=result.alltime_dl,
             up_total_size=result.alltime_ul,
-            free_space_size = result.free_space_on_disk,
+            free_space_size=result.free_space_on_disk,
             upspeed=result.up_info_speed,
             dlspeed=result.dl_info_speed
         )

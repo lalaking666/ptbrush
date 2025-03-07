@@ -15,6 +15,9 @@ from apscheduler.executors.pool import ThreadPoolExecutor
 from loguru import logger
 import tasks as tasks
 from config.config import BrushConfig, PTBrushConfig
+from ptbrush.web.server import start_web_server_thread
+import os
+from ptbrush.db import migrate_database
 
 # 设置不打印 debug 级别的日志，最小级别为 INFO
 logger.remove()  # 移除默认的 handler
@@ -38,6 +41,14 @@ def run_if_work_time(func):
     return wrapper
 
 def main():
+    # 确保数据库结构是最新的
+    migrate_database()
+    
+    # Start web server
+    web_port = int(os.environ.get('WEB_PORT', 8000))
+    web_thread = start_web_server_thread(port=web_port)
+    logger.info(f"Web界面已启动，端口: {web_port}")
+    
     executors = {"default": ThreadPoolExecutor(max_workers=6)}
     job_defaults = {"coalesce": True, "max_instances": 1}
     scheduler = BlockingScheduler(
@@ -93,6 +104,7 @@ def main():
     )
     
     logger.info(f"开始运行，稍后你可以在日志文件中查看日志，观察运行情况...")
+    logger.info(f"Web界面已启动，访问 http://your-server-ip:{web_port} 查看刷流状态")
     scheduler.start()
 
 if __name__ == "__main__":
