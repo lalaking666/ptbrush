@@ -5,7 +5,6 @@
 @Time    :   2024/11/04 10:34:05
 @Author  :   huihuidehui 
 @Version :   1.0
-@Contact :   kanhuihui@163.com
 '''
 
 # here put the import lib

@@ -1,3 +1,13 @@
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+'''
+@File    :   server.py
+@Time    :   2025/03/07 17:05:28
+@Version :   1.0
+'''
+
+# here put the import lib
+
 from ptbrush.web import create_app
 import threading
 

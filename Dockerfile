@@ -4,7 +4,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV WEB_PORT 8000
 COPY ptbrush /app
-
+ENV PYTHONPATH /app
 ADD docker-entrypoint.sh docker-entrypoint.sh
 
 COPY requirements.txt /app/requirements.txt
