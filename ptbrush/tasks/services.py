@@ -27,8 +27,8 @@ class PtTorrentService():
         """
         抓取种子，并进行存储
         """
-        logger.info(f"开始抓取PT站点FREE种子，准备处理{len(sites)}个站点")
         sites = PTBrushConfig().sites
+        logger.info(f"开始抓取PT站点FREE种子，准备处理{len(sites)}个站点")
         count = 0
         for site in sites:
             logger.info(f'开始处理站点:{site.name}, 正在初始化抓取器...')
