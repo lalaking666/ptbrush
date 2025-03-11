@@ -1,0 +1,7 @@
+.vscode
+.git
+*.md
+*.toml
+*.lock
+*.db
+.DS_Store
