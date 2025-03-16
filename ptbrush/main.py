@@ -92,7 +92,7 @@ def main():
     scheduler.add_job(
         tasks.fetch_pt_torrents, 
         "cron", 
-        minute="*/15"
+        minute="*/30"
     )
     
     # 每3分钟清理一次长时间无活跃的种子
