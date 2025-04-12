@@ -85,11 +85,11 @@ def test_brush_config_defaults():
     assert config.min_disk_space == 1024 * 1024 * 1024 * 1024  # 1024 GiB
     assert config.expect_upload_speed == int(1.875 * 1024 * 1024)  # 1.875 MiB/s
     assert config.expect_download_speed == 12 * 1024 * 1024  # 12 MiB/s
-    assert config.torrent_max_size == 50 * 1024 * 1024 * 1024  # 50 GiB
+    assert config.torrent_max_size == 10 * 1024 * 1024 * 1024  # 10 GiB
     assert config.max_downloading_torrents == 6
     assert config.upload_cycle == 600
     assert config.download_cycle == 600
-    assert config.max_no_activate_time == 30
+    assert config.max_no_activate_time == 10
 
 def test_parse_time_ranges():
     # Test single range
@@ -149,13 +149,13 @@ def test_check_work_time(mocker):
     
     # Set current time to 2:30
     MockDateTime.current_time = datetime(2024, 1, 1, 2, 30)
-    with patch('ptbrush.config.config.datetime', MockDateTime):
+    with patch('datetime.datetime', MockDateTime):
         assert check_work_time(mock_config.brush) == True
     
     # Test when current time is outside work hours
     # Set current time to 5:00
     MockDateTime.current_time = datetime(2024, 1, 1, 5, 0)
-    with patch('ptbrush.config.config.datetime', MockDateTime):
+    with patch('datetime.datetime', MockDateTime):
         assert check_work_time(mock_config.brush) == False
     
     # Test multiple time ranges
@@ -163,31 +163,31 @@ def test_check_work_time(mocker):
     
     # Test time within first range (21:00)
     MockDateTime.current_time = datetime(2024, 1, 1, 21, 0)
-    with patch('ptbrush.config.config.datetime', MockDateTime):
+    with patch('datetime.datetime', MockDateTime):
         assert check_work_time(mock_config.brush) == True
     
     # Test time within second range (3:00)
     MockDateTime.current_time = datetime(2024, 1, 1, 3, 0)
-    with patch('ptbrush.config.config.datetime', MockDateTime):
+    with patch('datetime.datetime', MockDateTime):
         assert check_work_time(mock_config.brush) == True
     
     # Test time outside both ranges (12:00)
     MockDateTime.current_time = datetime(2024, 1, 1, 12, 0)
-    with patch('ptbrush.config.config.datetime', MockDateTime):
+    with patch('datetime.datetime', MockDateTime):
         assert check_work_time(mock_config.brush) == False
     
     # Test edge cases
     # Start of range
     MockDateTime.current_time = datetime(2024, 1, 1, 20, 0)
-    with patch('ptbrush.config.config.datetime', MockDateTime):
+    with patch('datetime.datetime', MockDateTime):
         assert check_work_time(mock_config.brush) == True
     
     # End of range
     MockDateTime.current_time = datetime(2024, 1, 1, 23, 59)
-    with patch('ptbrush.config.config.datetime', MockDateTime):
+    with patch('datetime.datetime', MockDateTime):
         assert check_work_time(mock_config.brush) == True
     
     # Just outside range
     MockDateTime.current_time = datetime(2024, 1, 1, 19, 59)
-    with patch('ptbrush.config.config.datetime', MockDateTime):
+    with patch('datetime.datetime', MockDateTime):
         assert check_work_time(mock_config.brush) == False 

@@ -10,7 +10,8 @@ from pydantic_settings import (
     TomlConfigSettingsSource,
 )
 import re
-from datetime import datetime, time
+from datetime import time
+import datetime
 
 
 CONFIG_FILE_PATH = Path(__file__).parent.parent / 'data' / "config.toml"
@@ -165,10 +166,10 @@ class BrushConfig(BaseModel):
     # - "1KiB", "1MiB", "1GiB", "1TiB"
     # 超过此限制后，会将种子中的部分文件设置为不下载
     # 默认值为50GiB
-    torrent_max_size: Union[str, int] = 1024 * 1024 * 1024 * 50
+    torrent_max_size: Union[str, int] = 1024 * 1024 * 1024 * 10
     
-    # 允许种子最大的无活跃(无下载也无上传)时间，超过此时间将会被删除，单位为:分钟，默认30分钟
-    max_no_activate_time: int = 30
+    # 允许种子最大的无活跃(无下载也无上传)时间，超过此时间将会被删除，单位为:分钟，默认10分钟
+    max_no_activate_time: int = 10
     
     # 工作时间范围，格式如: "1-4" 表示1:00-4:59, "20-23,0-6" 表示20:00-23:59和0:00-6:59
     # 留空则表示24小时工作
@@ -215,7 +216,7 @@ class BrushConfig(BaseModel):
         if not self.work_time:
             return True
             
-        now = datetime.now().time()
+        now = datetime.datetime.now().time()
         ranges = parse_time_ranges(self.work_time)
         return any(start <= now <= end for start, end in ranges)
 

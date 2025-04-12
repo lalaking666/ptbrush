@@ -40,7 +40,7 @@ class PtTorrentService():
                 self._insert_or_update_torrent(torrent)
                 count += 1
             logger.info(f"站点{site.name}处理完成，已抓取{count}个种子")
-        logger.info(f"抓取PT站点FREE种子完成，本轮共抓取到{count}个种子，准备进入下一轮抓取")
+        logger.info(f"抓取PT站点FREE种子完成，本轮共抓取到{count}个种子")
 
     def _insert_or_update_torrent(self, torrent: Torrent):
         updated_time = datetime.now()

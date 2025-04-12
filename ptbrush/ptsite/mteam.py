@@ -32,9 +32,10 @@ class MTeamSpider(BaseSiteSpider):
             "mode": "movie",
             "visible": 1,
             "pageNumber": 1,
-            "pageSize": 100,
+            "pageSize": 200,
             "sortDirection": "DESC",
             "sortField": "CREATED_DATE",
+            "discount":"FREE",
         },
         # 成人最新
         {
@@ -42,9 +43,10 @@ class MTeamSpider(BaseSiteSpider):
             "mode": "adult",
             "visible": 1,
             "pageNumber": 1,
-            "pageSize": 100,
+            "pageSize": 200,
             "sortDirection": "DESC",
             "sortField": "CREATED_DATE",
+            "discount":"FREE",
         },
         # 电视最新
         {
@@ -52,9 +54,10 @@ class MTeamSpider(BaseSiteSpider):
             "mode": "tvshow",
             "visible": 1,
             "pageNumber": 1,
-            "pageSize": 100,
+            "pageSize": 200,
             "sortDirection": "DESC",
             "sortField": "CREATED_DATE",
+            "discount":"FREE",
         },
         # 综合最新
         {
@@ -62,9 +65,10 @@ class MTeamSpider(BaseSiteSpider):
             "mode": "normal",
             "visible": 1,
             "pageNumber": 1,
-            "pageSize": 100,
+            "pageSize": 200,
             "sortDirection": "DESC",
             "sortField": "CREATED_DATE",
+            "discount":"FREE",
         },
         # 排行榜 下载数最多
         {
@@ -135,6 +139,7 @@ class MTeamSpider(BaseSiteSpider):
 
     def _parse_torrent(self, item: dict) -> Torrent:
         free_end_time_str = self._parse_free_end_time(item)
+            
         free_end_time = datetime.strptime(free_end_time_str, "%Y-%m-%d %H:%M:%S")
 
         torrent = Torrent(

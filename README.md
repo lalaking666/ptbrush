@@ -90,10 +90,10 @@ PTBrush提供`docker-compose`方式一行命令部署：
    expect_download_speed = "12MiB/s"
    
    # 单个种子的文件大小限制，超过此限制后会进行拆包
-   torrent_max_size = "50GiB"
+    =torrent_max_size "10GiB"
    
    # 允许种子最大的无活跃时间，超过此时间将会被删除，单位为:分钟
-   max_no_activate_time = 30
+   max_no_activate_time = 10
    
    # 下载器设置，仅支持qb
    [downloader]

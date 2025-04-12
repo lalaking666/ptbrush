@@ -43,10 +43,10 @@ expect_download_speed = "12MiB/s"
 # - "1KiB", "1MiB", "1GiB", "1TiB"
 # 超过此限制后，会将种子中的部分文件设置为不下载(也就是对大包就行拆包)
 # 一般不需要修改
-torrent_max_size = "50GiB"
+torrent_max_size = "10GiB"
 
 # 允许种子最大的连续无活跃(无下载也无上传)时间，超过此时间将会被删除，单位为:分钟，默认30
-max_no_activate_time = 30
+max_no_activate_time = 10
 
 
 
