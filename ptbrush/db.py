@@ -14,7 +14,15 @@ import peewee
 from loguru import logger
 
 database = peewee.SqliteDatabase(
-    str(Path(__file__).parent / 'data'/'ptbrush.db'))
+    str(Path(__file__).parent / 'data' / 'ptbrush.db'),
+    pragmas={
+        'journal_mode': 'wal',
+        'synchronous': 'normal',
+        'cache_size': -32000,
+        'mmap_size': 268435456,
+        'temp_store': 'memory',
+        'wal_autocheckpoint': 10000,
+    })
 
 
 class BaseModel(peewee.Model):

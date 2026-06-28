@@ -183,10 +183,6 @@ class QBTorrentService():
         old_records = BrushTorrent.delete().where(BrushTorrent.created_time < (datetime.now() - timedelta(days=7))).execute()
         logger.info(f"已清理{old_records}条7天前的历史记录")
 
-        # 对数据库瘦身
-        logger.info("开始对数据库进行瘦身优化...")
-        database.execute_sql('VACUUM;')
-        
         logger.info(f"长时间未活动种子清理完成，本次共清理{cleaned_count}个无活动种子")
 
     def torrent_thinned(self):
@@ -378,4 +374,11 @@ class BrushService():
         logger.info(f"刷流任务完成，本次成功添加{len(torrents)}个新种子")
         return len(torrents)
 
+
+# 单独的 VACUUM 任务：原本每分钟在 clean_long_time_no_activate 里执行，
+# 改为每 7 天调度一次，避免对 SSD 造成高频整库重写。
+def vacuum_database():
+    logger.info("开始对数据库进行 VACUUM 瘦身（每 7 天一次）...")
+    database.execute_sql('VACUUM;')
+    logger.info("VACUUM 完成")
 

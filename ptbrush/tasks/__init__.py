@@ -10,7 +10,7 @@
 # here put the import lib
 from time import sleep
 from loguru import logger
-from tasks.services import PtTorrentService, QBTorrentService, BrushService
+from tasks.services import PtTorrentService, QBTorrentService, BrushService, vacuum_database as _vacuum_database
 # 给所有任务加一个装饰器，进行错误捕获
 def catch_error(func):
     def wrapper():
@@ -62,4 +62,9 @@ def clean_will_expire_torrents():
 @catch_error
 def torrent_thinned():
     QBTorrentService().torrent_thinned()
+
+# 对数据库执行 VACUUM 瘦身（每 7 天一次，避免高频整库重写写废 SSD）
+@catch_error
+def vacuum_database():
+    _vacuum_database()
 

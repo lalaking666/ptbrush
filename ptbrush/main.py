@@ -97,11 +97,19 @@ def main():
     
     # 每3分钟清理一次长时间无活跃的种子
     scheduler.add_job(
-        tasks.clean_long_time_no_activate_torrents, 
-        "cron", 
+        tasks.clean_long_time_no_activate_torrents,
+        "cron",
         minute="*"
     )
-    
+
+    # 每 7 天对数据库执行一次 VACUUM 瘦身（从 clean_long_time_no_activate_torrents 拆出，
+    # 原先每分钟一次会导致整库重写约 ~120MB，对 SSD 寿命冲击极大）
+    scheduler.add_job(
+        tasks.vacuum_database,
+        "interval",
+        days=7
+    )
+
     logger.info(f"开始运行，稍后你可以在日志文件中查看日志，观察运行情况...")
     logger.info(f"Web界面已启动，访问 http://your-server-ip:{web_port} 查看刷流状态")
     scheduler.start()
