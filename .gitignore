@@ -108,8 +108,13 @@ venv.bak/
 
 *.lock
 *.db
+*.db-shm
+*.db-wal
 .vscode
 
 .DS_Store
 
 *.toml
+
+# Playwright MCP local artifacts (screenshots / snapshots / console logs)
+.playwright-mcp/

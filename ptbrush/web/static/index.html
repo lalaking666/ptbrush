@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTBrush</title>
+    <link rel="stylesheet" href="/static/vendor/element-plus.css">
+    <link rel="stylesheet" href="/static/css/app.css">
+    <script>window.process = { env: { NODE_ENV: 'production' } };</script>
+    <script type="importmap">
+        {
+            "imports": {
+                "vue": "/static/vendor/vue.esm-browser.prod.js",
+                "vue-router": "/static/vendor/vue-router.esm-browser.prod.js",
+                "element-plus": "/static/vendor/element-plus.full.min.mjs"
+            }
+        }
+    </script>
+    <script src="/static/vendor/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div id="app"></div>
+    <script type="module" src="/static/js/main.js"></script>
+</body>
+</html>
