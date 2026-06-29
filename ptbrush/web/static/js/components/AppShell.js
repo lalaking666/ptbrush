@@ -27,14 +27,31 @@ export default defineComponent({
             }
         }
 
-        onMounted(loadAuthState);
+        const version = ref('');
 
-        return { authState, logout };
+        async function loadVersion() {
+            try {
+                const data = await api.get('/api/version');
+                version.value = data.version;
+            } catch (e) {
+                // ignore
+            }
+        }
+
+        onMounted(() => {
+            loadAuthState();
+            loadVersion();
+        });
+
+        return { authState, logout, version };
     },
     template: `
         <el-container style="height:100vh;">
             <el-header class="app-header" height="56px">
-                <div class="app-brand">PTBrush</div>
+                <div class="app-brand">
+                    PTBrush
+                    <span class="app-version" v-if="version">v{{ version }}</span>
+                </div>
                 <el-menu
                     mode="horizontal"
                     :ellipsis="false"

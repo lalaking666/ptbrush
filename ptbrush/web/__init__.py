@@ -4,6 +4,7 @@ from pathlib import Path
 
 from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
+from version import get_version
 
 WEB_DIR = Path(__file__).resolve().parent
 STATIC_DIR = WEB_DIR / "static"
@@ -33,6 +34,13 @@ def create_app():
     app.register_blueprint(api_auth_bp)
     app.register_blueprint(api_stats_bp)
     app.register_blueprint(api_config_bp)
+
+    @app.route("/api/version")
+    def api_version():
+        return jsonify({
+            "version": get_version(),
+            "name": "ptbrush",
+        })
 
     @app.route("/", defaults={"path": ""})
     @app.route("/<path:path>")

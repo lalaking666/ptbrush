@@ -12,6 +12,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Write version from release tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "$VERSION" > ptbrush/VERSION
+          echo "Updated ptbrush/VERSION to $VERSION"
+          # 同步更新 pyproject.toml 的版本
+          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" pyproject.toml
+          echo "Updated pyproject.toml version to $VERSION"
+
       - name: Build Docker image
         run: |
           docker build -t huihuidehui/ptbrush:${{ github.event.release.tag_name }} .

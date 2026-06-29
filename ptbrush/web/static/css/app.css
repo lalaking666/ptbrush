@@ -293,3 +293,11 @@ body {
         width: 100%;
     }
 }
+
+
+.app-version {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-left: 6px;
+    font-weight: 400;
+}
