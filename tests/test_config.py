@@ -3,6 +3,7 @@ from config.config import parse_size, parse_speed, BrushConfig, parse_time_range
 from datetime import time, datetime
 from unittest.mock import patch
 from main import check_work_time
+from web.config_schemas import BrushInput
 
 def test_parse_size():
     # Test integer input
@@ -90,6 +91,21 @@ def test_brush_config_defaults():
     assert config.upload_cycle == 600
     assert config.download_cycle == 600
     assert config.max_no_activate_time == 10
+
+def test_brush_input_allows_disabling_inactive_cleanup():
+    base = {
+        "min_disk_space": {"value": 512, "unit": "GiB"},
+        "torrent_max_size": {"value": 10, "unit": "GiB"},
+        "expect_upload_speed": {"value": 5, "unit": "MiB/s"},
+        "expect_download_speed": {"value": 12, "unit": "MiB/s"},
+        "max_downloading_torrents": 6,
+        "work_time": "",
+        "upload_cycle": 600,
+        "download_cycle": 600,
+    }
+
+    assert BrushInput(**base, max_no_activate_time=0).max_no_activate_time == 0
+    assert BrushInput(**base, max_no_activate_time=-1).max_no_activate_time == -1
 
 def test_parse_time_ranges():
     # Test single range

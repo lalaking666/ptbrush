@@ -27,16 +27,15 @@ export default defineComponent({
         return { value, unit, UNITS };
     },
     template: `
-        <div style="display:flex;gap:8px;">
+        <div class="compound-input">
             <el-input-number
                 v-model="value"
                 :min="0"
                 :step="1"
                 :precision="3"
                 :disabled="disabled"
-                controls-position="right"
-                style="flex:1;" />
-            <el-select v-model="unit" :disabled="disabled" style="width:100px;">
+                controls-position="right" />
+            <el-select v-model="unit" :disabled="disabled">
                 <el-option v-for="u in UNITS" :key="u" :label="u" :value="u" />
             </el-select>
         </div>

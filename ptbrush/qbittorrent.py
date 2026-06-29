@@ -10,6 +10,7 @@ from datetime import datetime
 from pathlib import Path
 import re
 import traceback
+from collections.abc import Mapping
 from typing import List
 import uuid
 import qbittorrentapi
@@ -37,6 +38,20 @@ class QBittorrentStatus(BaseModel):
     upspeed: int
     dlspeed: int
     free_space_size:int
+
+
+def _is_torrents_add_success(response) -> bool:
+    if isinstance(response, str):
+        return response != "Fails."
+
+    if not isinstance(response, Mapping):
+        return False
+
+    failed_values = [
+        value for key, value in response.items()
+        if "fail" in str(key).lower() or "error" in str(key).lower()
+    ]
+    return not any(bool(value) for value in failed_values)
 
 
 class QBittorrent:
@@ -134,7 +149,7 @@ class QBittorrent:
             rename=torrent_name,
             use_auto_torrent_management=True,
         )
-        return res == "Ok."
+        return _is_torrents_add_success(res)
 
     def delete_torrent(self, torrent_hash: str):
         self.qb.torrents_delete(delete_files=True, torrent_hashes=[torrent_hash])

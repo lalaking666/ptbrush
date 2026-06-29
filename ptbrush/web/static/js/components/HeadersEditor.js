@@ -23,21 +23,21 @@ export default defineComponent({
         return { update, addRow, removeRow };
     },
     template: `
-        <div>
+        <div class="headers-editor">
             <div v-if="!modelValue.length" style="color:#909399;font-size:12px;margin-bottom:8px;">
-                尚未配置 Header
+                尚未配置 Header。只有站点要求额外请求头时才需要添加。
             </div>
             <div v-for="(row, idx) in modelValue" :key="idx" class="headers-row">
                 <el-input
                     :model-value="row.key"
-                    placeholder="key (如 x-api-key)"
+                    placeholder="Header 名称，如 x-api-key"
                     :disabled="disabled"
                     @update:model-value="v => update(idx, 'key', v)" />
                 <el-input
                     :model-value="row.value"
                     type="password"
                     show-password
-                    placeholder="value（留空则保留原值）"
+                    placeholder="Header 值，留空则保留原值"
                     :disabled="disabled"
                     @update:model-value="v => update(idx, 'value', v)" />
                 <el-button

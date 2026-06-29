@@ -65,35 +65,40 @@ export default defineComponent({
                     ? '当前已启用登录密码。清空新密码可关闭登录。'
                     : '当前未启用登录。设置新密码后启用，下次刷新生效。'" />
             <el-form label-position="top">
-                <el-row :gutter="16">
-                    <el-col :xs="24" :sm="8" v-if="loginRequired">
-                        <el-form-item label="当前密码">
-                            <el-input
-                                v-model="form.current_password"
-                                type="password" show-password
-                                placeholder="必填" />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :xs="24" :sm="8">
-                        <el-form-item label="新密码">
-                            <el-input
-                                v-model="form.new_password"
-                                type="password" show-password
-                                placeholder="留空表示关闭登录" />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :xs="24" :sm="8">
-                        <el-form-item label="确认新密码">
-                            <el-input
-                                v-model="form.confirm_password"
-                                type="password" show-password
-                                placeholder="再输一次" />
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-button type="primary" :loading="submitting" @click="submit">
-                    更新密码
-                </el-button>
+                <div class="form-stack">
+                    <el-form-item label="当前密码" v-if="loginRequired">
+                        <el-input
+                            v-model="form.current_password"
+                            type="password" show-password
+                            placeholder="必填" />
+                        <div class="field-help">
+                            当前 PTBrush Web 访问密码。修改或关闭登录前需要先验证它。
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="新密码">
+                        <el-input
+                            v-model="form.new_password"
+                            type="password" show-password
+                            placeholder="留空表示关闭登录" />
+                        <div class="field-help">
+                            这是 PTBrush 自己的 Web 登录密码，不是 qBittorrent 密码。设置后访问配置和 API 需要登录；留空保存会关闭登录保护。
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="确认新密码">
+                        <el-input
+                            v-model="form.confirm_password"
+                            type="password" show-password
+                            placeholder="再输一次" />
+                        <div class="field-help">
+                            再输入一次新密码，用于避免手误。两次不一致时不会提交。
+                        </div>
+                    </el-form-item>
+                    <div class="password-actions">
+                        <el-button type="primary" :loading="submitting" @click="submit">
+                            更新密码
+                        </el-button>
+                    </div>
+                </div>
             </el-form>
         </el-card>
     `,

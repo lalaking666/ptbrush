@@ -31,7 +31,7 @@ class BrushInput(BaseModel):
     expect_upload_speed: SpeedWithUnit
     expect_download_speed: SpeedWithUnit
     max_downloading_torrents: int = Field(ge=1, le=100)
-    max_no_activate_time: int = Field(ge=1)
+    max_no_activate_time: int
     work_time: str = ""
     upload_cycle: int = Field(default=600, ge=60)
     download_cycle: int = Field(default=600, ge=60)

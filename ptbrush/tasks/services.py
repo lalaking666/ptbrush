@@ -129,6 +129,10 @@ class QBTorrentService():
         """
         清理长时间未活动的种子
         """
+        if self._config.brush.max_no_activate_time <= 0:
+            logger.info("长时间无活跃种子清理已关闭，跳过本次任务")
+            return
+
         logger.info(f"开始清理长时间未活动的种子")
         qb_torrents = self._qb.torrents
 
@@ -381,4 +385,3 @@ def vacuum_database():
     logger.info("开始对数据库进行 VACUUM 瘦身（每 7 天一次）...")
     database.execute_sql('VACUUM;')
     logger.info("VACUUM 完成")
-

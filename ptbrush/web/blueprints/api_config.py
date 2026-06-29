@@ -1,15 +1,9 @@
-import tomli_w
-from flask import Blueprint, Response, jsonify, request
+import qbittorrentapi
+from flask import Blueprint, jsonify, request
 from pydantic import ValidationError
-
-try:
-    import tomllib  # py3.11+
-except ImportError:  # pragma: no cover
-    import tomli as tomllib  # type: ignore
 
 from config.config import PTBrushConfig
 from ptsite import TorrentFetch
-from qbittorrent import QBittorrent
 from web.auth import login_required
 from web.config_io import atomic_write, merge_with_mask, read_raw
 from web.config_schemas import (
@@ -27,6 +21,7 @@ from web.config_serializer import (
 )
 
 api_config_bp = Blueprint("api_config", __name__)
+TEST_DOWNLOADER_TIMEOUT = 5
 
 
 def _serialize_brush(brush) -> dict:
@@ -162,63 +157,22 @@ def test_downloader():
 
     qb = None
     try:
-        qb = QBittorrent(payload.url, payload.username, password)
-        # QBittorrent 的 __init__ 已经做了 auth_log_in
+        qb = qbittorrentapi.Client(
+            host=payload.url,
+            username=payload.username,
+            password=password,
+            REQUESTS_ARGS={"timeout": TEST_DOWNLOADER_TIMEOUT},
+        )
+        qb.auth_log_in()
         return jsonify({"ok": True, "message": "连接成功"})
     except Exception as e:
         return jsonify({"ok": False, "message": f"连接失败：{e}"}), 200
     finally:
         if qb is not None:
             try:
-                qb.close()
+                qb.auth_log_out()
             except Exception:
                 pass
-
-
-@api_config_bp.route("/api/config/export", methods=["GET"])
-@login_required
-def export_config():
-    raw = read_raw()
-    # 去掉 web 段（含 secret_key / password）再导出
-    raw.pop("web", None)
-    body = tomli_w.dumps(raw)
-    return Response(
-        body,
-        mimetype="application/toml",
-        headers={"Content-Disposition": 'attachment; filename="ptbrush-config.toml"'},
-    )
-
-
-@api_config_bp.route("/api/config/import", methods=["POST"])
-@login_required
-def import_config():
-    raw_body = request.get_data()
-    if not raw_body:
-        return jsonify({"error": "请求体为空"}), 400
-    try:
-        incoming = tomllib.loads(raw_body.decode("utf-8"))
-    except (tomllib.TOMLDecodeError, UnicodeDecodeError) as e:
-        return jsonify({"error": f"TOML 解析失败：{e}"}), 400
-    if not isinstance(incoming, dict):
-        return jsonify({"error": "根结构必须为 table"}), 400
-
-    # 不允许 import 覆盖 web 段（password / secret_key 必须本地控制）
-    incoming.pop("web", None)
-    current = read_raw()
-    current_web = current.get("web") or {}
-    incoming["web"] = current_web
-
-    # 二次校验：能被 PTBrushConfig 接受
-    try:
-        PTBrushConfig.model_validate(incoming)
-    except ValidationError as e:
-        return jsonify({"error": "导入的配置校验失败", "details": e.errors()}), 400
-
-    try:
-        atomic_write(incoming)
-        return jsonify({"ok": True, "message": "已导入，配置将在下次任务周期自动生效（web 设置保留本地值）"})
-    except Exception as e:
-        return jsonify({"error": f"写入失败：{e}"}), 500
 
 
 @api_config_bp.route("/api/config/health", methods=["GET"])

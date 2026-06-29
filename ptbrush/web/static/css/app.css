@@ -56,6 +56,60 @@ body {
     height: 320px;
 }
 
+.config-page {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.config-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.config-page-header h2 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.config-actions,
+.card-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.config-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.config-actions .el-button + .el-button {
+    margin-left: 0;
+}
+
+.card-header-row {
+    width: 100%;
+}
+
+.supported-sites {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.supported-sites span {
+    color: #909399;
+    font-size: 12px;
+    margin-right: 4px;
+}
+
 .hour-grid {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
@@ -70,19 +124,97 @@ body {
 .field-help {
     color: #909399;
     font-size: 12px;
+    margin-top: 6px;
+    line-height: 1.5;
+    /* el-form-item__content 是 flex-wrap，加 flex-basis:100% 强制说明文字独占一行 */
+    flex-basis: 100%;
+    width: 100%;
+}
+
+.form-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.compound-input {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+}
+
+.speed-input,
+.headers-editor {
+    width: 100%;
+}
+
+.compound-input .el-input-number {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+}
+
+.compound-input .el-select {
+    flex: 0 0 112px;
+}
+
+.password-actions {
     margin-top: 4px;
+}
+
+.number-action-row {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.number-action-row .el-input-number {
+    flex: 1;
+    min-width: 0;
+}
+
+.number-action-row .el-button {
+    flex: 0 0 auto;
+    margin-left: 0;
 }
 
 .site-card + .site-card {
     margin-top: 16px;
 }
 
+.site-option-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.site-option-row small {
+    color: #909399;
+}
+
+.site-add-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.site-add-row .el-select {
+    flex: 1;
+    min-width: 0;
+}
+
 .headers-row {
     display: grid;
-    grid-template-columns: 1fr 2fr auto;
+    grid-template-columns: 1fr;
     gap: 8px;
-    margin-bottom: 8px;
-    align-items: center;
+    margin-bottom: 12px;
+    align-items: stretch;
+}
+
+.headers-row .el-button {
+    justify-self: start;
 }
 
 .preset-row {
@@ -91,4 +223,55 @@ body {
 
 .preset-row .el-button + .el-button {
     margin-left: 0;
+}
+
+@media (max-width: 640px) {
+    .el-main {
+        padding: 12px;
+    }
+
+    .config-page-header,
+    .card-header-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .config-actions,
+    .supported-sites {
+        justify-content: flex-start;
+        width: 100%;
+    }
+
+    .config-actions .el-button {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .site-add-row {
+        flex-direction: column;
+    }
+
+    .site-add-row .el-button {
+        margin-left: 0;
+    }
+
+    .hour-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+
+    .compound-input {
+        gap: 6px;
+    }
+
+    .compound-input .el-select {
+        flex-basis: 96px;
+    }
+
+    .number-action-row {
+        flex-direction: column;
+    }
+
+    .number-action-row .el-button {
+        width: 100%;
+    }
 }
