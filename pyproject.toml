@@ -1,30 +1,34 @@
-[tool.poetry]
+[project]
 name = "ptbrush"
 version = "0.1.0"
 description = ""
-authors = ["huihuidehui <kanhuihui@163.com>"]
+authors = [
+    { name = "huihuidehui", email = "kanhuihui@163.com" },
+]
 readme = "README.md"
-
-[tool.poetry.dependencies]
-python = "^3.10"
-click = "^8.1.7"
-qbittorrent-api = "^2026.6.1"
-pydantic = "^2.9.2"
-pydantic-settings = {extras = ["toml"], version = "^2.7.0"}
-loguru = "^0.7.2"
-requests = "^2.32.3"
-prettytable = "^3.12.0"
-peewee = "^3.17.7"
-apscheduler = "^3.10.4"
-jsonpath = "^0.82.2"
-pytest = "^8.3.4"
-pytest-mock = "^3.14.0"
-flask = "^3.1.0"
-flask-cors = "^5.0.1"
-pandas = "^2.2.3"
-plotly = "^6.0.0"
-
+requires-python = ">=3.10,<4.0"
+dependencies = [
+    "click>=8.1.7,<9.0.0",
+    "qbittorrent-api>=2026.6.1,<2027.0.0",
+    "pydantic>=2.9.2,<3.0.0",
+    "pydantic-settings[toml]>=2.7.0,<3.0.0",
+    "loguru>=0.7.2,<0.8.0",
+    "requests>=2.32.3,<3.0.0",
+    "prettytable>=3.12.0,<4.0.0",
+    "peewee>=3.17.7,<4.0.0",
+    "apscheduler>=3.10.4,<4.0.0",
+    "jsonpath>=0.82.2,<0.83.0",
+    "pytest>=8.3.4,<9.0.0",
+    "pytest-mock>=3.14.0,<4.0.0",
+    "flask>=3.1.0,<4.0.0",
+    "flask-cors>=5.0.1,<6.0.0",
+    "pandas>=2.2.3,<3.0.0",
+    "plotly>=6.0.0,<7.0.0",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ptbrush"]

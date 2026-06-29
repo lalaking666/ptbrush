@@ -3,6 +3,12 @@ RUN sed -i s@/deb.debian.org/@/mirrors.tuna.tsinghua.edu.cn/@g /etc/apt/sources.
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV WEB_PORT 8000
+ENV UV_LINK_MODE=copy
+ENV UV_SYSTEM_PYTHON=1
+ENV UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
 COPY ptbrush /app
 ENV PYTHONPATH /app
 ADD docker-entrypoint.sh docker-entrypoint.sh
@@ -11,7 +17,7 @@ COPY requirements.txt /app/requirements.txt
 RUN apt-get update && apt-get install -y gosu && apt-get clean \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* \
-    && pip3 install --no-cache-dir -r /app/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple \
+    && uv pip install --system --no-cache -r /app/requirements.txt \
     && chmod +x docker-entrypoint.sh \
     && useradd app
 
