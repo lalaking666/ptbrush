@@ -1,5 +1,11 @@
-from flask import Blueprint, jsonify, request
+import tomli_w
+from flask import Blueprint, Response, jsonify, request
 from pydantic import ValidationError
+
+try:
+    import tomllib  # py3.11+
+except ImportError:  # pragma: no cover
+    import tomli as tomllib  # type: ignore
 
 from config.config import PTBrushConfig
 from ptsite import TorrentFetch
@@ -167,6 +173,79 @@ def test_downloader():
                 qb.close()
             except Exception:
                 pass
+
+
+@api_config_bp.route("/api/config/export", methods=["GET"])
+@login_required
+def export_config():
+    raw = read_raw()
+    # 去掉 web 段（含 secret_key / password）再导出
+    raw.pop("web", None)
+    body = tomli_w.dumps(raw)
+    return Response(
+        body,
+        mimetype="application/toml",
+        headers={"Content-Disposition": 'attachment; filename="ptbrush-config.toml"'},
+    )
+
+
+@api_config_bp.route("/api/config/import", methods=["POST"])
+@login_required
+def import_config():
+    raw_body = request.get_data()
+    if not raw_body:
+        return jsonify({"error": "请求体为空"}), 400
+    try:
+        incoming = tomllib.loads(raw_body.decode("utf-8"))
+    except (tomllib.TOMLDecodeError, UnicodeDecodeError) as e:
+        return jsonify({"error": f"TOML 解析失败：{e}"}), 400
+    if not isinstance(incoming, dict):
+        return jsonify({"error": "根结构必须为 table"}), 400
+
+    # 不允许 import 覆盖 web 段（password / secret_key 必须本地控制）
+    incoming.pop("web", None)
+    current = read_raw()
+    current_web = current.get("web") or {}
+    incoming["web"] = current_web
+
+    # 二次校验：能被 PTBrushConfig 接受
+    try:
+        PTBrushConfig.model_validate(incoming)
+    except ValidationError as e:
+        return jsonify({"error": "导入的配置校验失败", "details": e.errors()}), 400
+
+    try:
+        atomic_write(incoming)
+        return jsonify({"ok": True, "message": "已导入，配置将在下次任务周期自动生效（web 设置保留本地值）"})
+    except Exception as e:
+        return jsonify({"error": f"写入失败：{e}"}), 500
+
+
+@api_config_bp.route("/api/config/health", methods=["GET"])
+@login_required
+def config_health():
+    cfg = PTBrushConfig()
+    missing = []
+    if not cfg.downloader or not cfg.downloader.url:
+        missing.append("downloader.url")
+    if not cfg.downloader or not cfg.downloader.username:
+        missing.append("downloader.username")
+    if not cfg.downloader or not cfg.downloader.password:
+        missing.append("downloader.password")
+    if not cfg.sites:
+        missing.append("sites")
+    else:
+        # 至少一个站点的 name 在 SITE_SPIDER_MAP 中且有有效凭证
+        valid = False
+        for s in cfg.sites:
+            if s.name not in TorrentFetch.SITE_SPIDER_MAP:
+                continue
+            if s.cookie or any(h.value for h in (s.headers or [])):
+                valid = True
+                break
+        if not valid:
+            missing.append("sites[*].credentials")
+    return jsonify({"ok": not missing, "missing": missing})
 
 
 @api_config_bp.route("/api/config/test-site", methods=["POST"])

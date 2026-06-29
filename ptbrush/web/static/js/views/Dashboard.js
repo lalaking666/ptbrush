@@ -24,6 +24,7 @@ export default defineComponent({
         const torrents = ref([]);
         const totalActive = ref(0);
         const selectedRange = ref(10);
+        const health = ref({ ok: true, missing: [] });
 
         async function loadStats() {
             try {
@@ -33,6 +34,14 @@ export default defineComponent({
                 totalActive.value = data.total_active;
             } catch (e) {
                 console.error('加载统计数据出错:', e);
+            }
+        }
+
+        async function loadHealth() {
+            try {
+                health.value = await api.get('/api/config/health');
+            } catch (e) {
+                // 接口缺失或未登录时不阻断 Dashboard
             }
         }
 
@@ -78,6 +87,7 @@ export default defineComponent({
         onMounted(() => {
             loadStats();
             loadHistory(selectedRange.value);
+            loadHealth();
             statsTimer = setInterval(loadStats, 10000);
             historyTimer = setInterval(() => loadHistory(selectedRange.value), 60000);
         });
@@ -93,6 +103,7 @@ export default defineComponent({
             torrents,
             totalActive,
             selectedRange,
+            health,
             timeOptions: TIME_OPTIONS,
             selectRange,
             formatBytes,
@@ -103,6 +114,19 @@ export default defineComponent({
     },
     template: `
         <div>
+            <el-alert
+                v-if="!health.ok && health.missing?.length"
+                type="warning"
+                show-icon
+                :closable="false"
+                style="margin-bottom:16px;"
+                title="配置不完整，刷流功能可能无法工作">
+                <template #default>
+                    <div>缺失字段：<el-tag v-for="m in health.missing" :key="m" type="warning" size="small" style="margin-right:4px;">{{ m }}</el-tag></div>
+                    <router-link to="/config" style="color:#e6a23c;text-decoration:underline;">前往配置页填写 →</router-link>
+                </template>
+            </el-alert>
+
             <el-row :gutter="16">
                 <el-col :xs="12" :sm="6" v-for="card in [
                     { label: '上传速度', unit: 'MiB/s', val: formatSpeed(stats.upspeed) },

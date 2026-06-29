@@ -5,6 +5,8 @@ import SizeInput from '../components/SizeInput.js';
 import SpeedInput from '../components/SpeedInput.js';
 import WorkTimePicker from '../components/WorkTimePicker.js';
 import SitesEditor from '../components/SitesEditor.js';
+import PasswordCard from '../components/PasswordCard.js';
+import ConfigToolbar from '../components/ConfigToolbar.js';
 
 function emptyForm() {
     return {
@@ -49,7 +51,7 @@ function stripPayload(form) {
 
 export default defineComponent({
     name: 'Config',
-    components: { SizeInput, SpeedInput, WorkTimePicker, SitesEditor },
+    components: { SizeInput, SpeedInput, WorkTimePicker, SitesEditor, PasswordCard, ConfigToolbar },
     setup() {
         const form = reactive(emptyForm());
         const supportedSites = ref([]);
@@ -57,15 +59,20 @@ export default defineComponent({
         const loading = ref(false);
         const saving = ref(false);
         const testing = ref(false);
+        const loginRequired = ref(false);
 
         async function load() {
             loading.value = true;
             try {
-                const data = await api.get('/api/config');
+                const [data, auth] = await Promise.all([
+                    api.get('/api/config'),
+                    api.get('/api/auth/state'),
+                ]);
                 Object.assign(form.brush, data.brush);
                 Object.assign(form.downloader, data.downloader);
                 form.sites = data.sites || [];
                 supportedSites.value = data.supported_sites || [];
+                loginRequired.value = !!auth?.login_required;
                 loaded.value = true;
             } catch (e) {
                 ElMessage.error(e.message || '加载失败');
@@ -127,7 +134,7 @@ export default defineComponent({
         onMounted(load);
 
         return {
-            form, supportedSites, loaded, loading, saving, testing,
+            form, supportedSites, loaded, loading, saving, testing, loginRequired,
             load, save, testDownloader, testSite,
         };
     },
@@ -136,6 +143,7 @@ export default defineComponent({
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
                 <h2 style="margin:0;">配置</h2>
                 <div>
+                    <ConfigToolbar @imported="load" />
                     <el-button :loading="loading" plain @click="load">重新加载</el-button>
                     <el-button type="primary" :loading="saving" :disabled="!loaded" @click="save">保存</el-button>
                 </div>
@@ -258,6 +266,10 @@ export default defineComponent({
                         :supported="supportedSites"
                         @test="testSite" />
                 </el-card>
+
+                <div style="margin-top:16px;">
+                    <PasswordCard :login-required="loginRequired" />
+                </div>
             </template>
         </div>
     `,

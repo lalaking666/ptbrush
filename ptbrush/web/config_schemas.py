@@ -81,3 +81,10 @@ class TestSitePayload(BaseModel):
 
 class LoginPayload(BaseModel):
     password: str
+
+
+class ChangePasswordPayload(BaseModel):
+    # 当前密码：若当前未启用登录，可传空串
+    current_password: str = ""
+    # 新密码：传空串表示"关闭登录"
+    new_password: str
