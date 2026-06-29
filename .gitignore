@@ -121,3 +121,7 @@ venv.bak/
 
 # config.toml runtime backup
 *.toml.bak
+
+# Local agent instruction files
+/AGENTS.md
+/CLAUDE.md
