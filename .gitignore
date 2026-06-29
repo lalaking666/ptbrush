@@ -118,3 +118,6 @@ venv.bak/
 
 # Playwright MCP local artifacts (screenshots / snapshots / console logs)
 .playwright-mcp/
+
+# config.toml runtime backup
+*.toml.bak

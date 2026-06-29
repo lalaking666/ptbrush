@@ -221,10 +221,18 @@ class BrushConfig(BaseModel):
         return any(start <= now <= end for start, end in ranges)
 
 
+class WebConfig(BaseModel):
+    # Web 端登录密码；为空时不要求登录（保留对老用户的兼容性）
+    password: str = ""
+    # Flask session 签名 key；为空时启动会自动生成并写回 toml
+    secret_key: str = ""
+
+
 class PTBrushConfig(BaseSettings):
     downloader: Optional[QBConfig] = None
     sites: Optional[List[SiteModel]] = []
     brush: Optional[BrushConfig] = BrushConfig()
+    web: Optional[WebConfig] = WebConfig()
 
     model_config = SettingsConfigDict(toml_file=str(CONFIG_FILE_PATH))
 

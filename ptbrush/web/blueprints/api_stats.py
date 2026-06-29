@@ -4,11 +4,13 @@ from flask import Blueprint, jsonify, request
 
 from db import BrushTorrent, QBStatus, Torrent
 from model import Torrent as TorrentModel
+from web.auth import login_required
 
 api_stats_bp = Blueprint("api_stats", __name__)
 
 
 @api_stats_bp.route("/api/stats")
+@login_required
 def get_stats():
     try:
         latest_status = QBStatus.select().order_by(QBStatus.created_time.desc()).first()
@@ -64,6 +66,7 @@ def get_stats():
 
 
 @api_stats_bp.route("/api/history")
+@login_required
 def get_history():
     try:
         minutes = int(request.args.get("minutes", 10))

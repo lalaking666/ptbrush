@@ -9,7 +9,7 @@ export default defineComponent({
         supported: { type: Array, default: () => [] },
         disabled: { type: Boolean, default: false },
     },
-    emits: ['update:modelValue'],
+    emits: ['update:modelValue', 'test'],
     setup(props, { emit }) {
         const sites = computed(() => props.modelValue || []);
         function updateField(idx, field, value) {
@@ -33,7 +33,10 @@ export default defineComponent({
         function isSupported(name) {
             return !name || props.supported.includes(name);
         }
-        return { sites, updateField, updateHeaders, addSite, removeSite, isSupported };
+        function testSite(site) {
+            emit('test', site);
+        }
+        return { sites, updateField, updateHeaders, addSite, removeSite, isSupported, testSite };
     },
     template: `
         <div>
@@ -44,10 +47,16 @@ export default defineComponent({
                 <template #header>
                     <div style="display:flex;justify-content:space-between;align-items:center;">
                         <strong>站点 {{ idx + 1 }}</strong>
-                        <el-button
-                            type="danger" plain size="small"
-                            :disabled="disabled"
-                            @click="removeSite(idx)">删除此站点</el-button>
+                        <div>
+                            <el-button
+                                size="small" plain
+                                :disabled="disabled || !site.name"
+                                @click="testSite(site)">测试此站点</el-button>
+                            <el-button
+                                type="danger" plain size="small"
+                                :disabled="disabled"
+                                @click="removeSite(idx)">删除此站点</el-button>
+                        </div>
                     </div>
                 </template>
                 <el-form label-position="top">
@@ -63,7 +72,7 @@ export default defineComponent({
                             :closable="false"
                             show-icon
                             style="margin-top:8px;"
-                            :title="'站点名称 “' + site.name + '” 不在程序支持列表内，运行时会失败。支持的站点：' + supported.join(', ')" />
+                            :title="'站点名称 “' + site.name + '” 不在程序支持列表内，运行时会失败。支持：' + supported.join(', ')" />
                     </el-form-item>
                     <el-form-item label="Cookie（可选）">
                         <el-input

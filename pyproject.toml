@@ -24,6 +24,7 @@ dependencies = [
     "flask-cors>=5.0.1,<6.0.0",
     "pandas>=2.2.3,<3.0.0",
     "plotly>=6.0.0,<7.0.0",
+    "tomli-w>=1.2.0",
 ]
 
 [build-system]
