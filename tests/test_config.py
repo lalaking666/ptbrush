@@ -1,9 +1,10 @@
 import pytest
-from config.config import parse_size, parse_speed, BrushConfig, parse_time_ranges
+from config.config import QBConfig, parse_size, parse_speed, BrushConfig, parse_time_ranges
 from datetime import time, datetime
 from unittest.mock import patch
 from main import check_work_time
 from web.config_schemas import BrushInput
+from web.config_io import merge_with_mask
 
 def test_parse_size():
     # Test integer input
@@ -91,6 +92,52 @@ def test_brush_config_defaults():
     assert config.upload_cycle == 600
     assert config.download_cycle == 600
     assert config.max_no_activate_time == 10
+
+
+def test_qb_config_defaults_to_password_auth_for_legacy_config():
+    config = QBConfig(url="http://127.0.0.1:8080", username="admin", password="secret")
+
+    assert config.auth_type == "password"
+    assert config.api_key == ""
+
+
+def test_qb_config_accepts_api_key_auth():
+    config = QBConfig(
+        url="http://127.0.0.1:8080",
+        auth_type="api_key",
+        api_key="qbt_demo_key",
+    )
+
+    assert config.username == ""
+    assert config.password == ""
+    assert config.auth_type == "api_key"
+    assert config.api_key == "qbt_demo_key"
+
+
+def test_merge_with_mask_preserves_downloader_api_key():
+    old = {
+        "downloader": {
+            "url": "http://old",
+            "auth_type": "api_key",
+            "username": "admin",
+            "password": "old-password",
+            "api_key": "old-api-key",
+        }
+    }
+    new = {
+        "downloader": {
+            "url": "http://new",
+            "auth_type": "api_key",
+            "username": "admin",
+            "password": "***",
+            "api_key": "",
+        }
+    }
+
+    merged = merge_with_mask(old, new)
+
+    assert merged["downloader"]["password"] == "old-password"
+    assert merged["downloader"]["api_key"] == "old-api-key"
 
 def test_brush_input_allows_disabling_inactive_cleanup():
     base = {

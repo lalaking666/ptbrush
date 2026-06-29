@@ -92,6 +92,19 @@ body {
     margin-left: 0;
 }
 
+.config-bottom-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #ebeef5;
+}
+
+.config-bottom-actions .el-button + .el-button {
+    margin-left: 0;
+}
+
 .card-header-row {
     width: 100%;
 }
@@ -242,9 +255,14 @@ body {
         width: 100%;
     }
 
-    .config-actions .el-button {
+    .config-actions .el-button,
+    .config-bottom-actions .el-button {
         flex: 1;
         min-width: 120px;
+    }
+
+    .config-bottom-actions {
+        width: 100%;
     }
 
     .site-add-row {

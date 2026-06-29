@@ -56,8 +56,13 @@ class QBTorrentService():
 
     def __init__(self):
         self._config = PTBrushConfig()
-        self._qb = QBittorrent(self._config.downloader.url,
-                               self._config.downloader.username, self._config.downloader.password)
+        self._qb = QBittorrent(
+            self._config.downloader.url,
+            self._config.downloader.username,
+            self._config.downloader.password,
+            self._config.downloader.auth_type,
+            self._config.downloader.api_key,
+        )
 
     def fetch_qb_status(self):
         """
@@ -240,8 +245,13 @@ class QBTorrentService():
 class BrushService():
     def __init__(self):
         self._config = PTBrushConfig()
-        self._qb = QBittorrent(self._config.downloader.url,
-                               self._config.downloader.username, self._config.downloader.password)
+        self._qb = QBittorrent(
+            self._config.downloader.url,
+            self._config.downloader.username,
+            self._config.downloader.password,
+            self._config.downloader.auth_type,
+            self._config.downloader.api_key,
+        )
 
     
     @property

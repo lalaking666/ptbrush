@@ -53,8 +53,12 @@ max_no_activate_time = 10
 # 下载器设置，仅支持qb
 [downloader]
 url = "http://127.0.0.1:8080"
+# 认证方式："password" 使用用户名密码；"api_key" 使用 qBittorrent v5.2.0+ 的 API Key
+auth_type = "password"
 username = ""
 password = ""
+# qBittorrent API Key，与下方站点 x-api-key 不是同一个东西
+api_key = ""
 
 # M-Team配置示例，请自行替换x-api-key参数
 [[sites]]
@@ -62,4 +66,3 @@ name = "M-Team"
 [[sites.headers]]
 key = "x-api-key"
 value = "xxxxx"
-

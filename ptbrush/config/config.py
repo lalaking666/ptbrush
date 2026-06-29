@@ -1,6 +1,6 @@
 from pathlib import Path
 import shutil
-from typing import List, Optional, Tuple, Type, Union
+from typing import List, Literal, Optional, Tuple, Type, Union
 from loguru import logger
 from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import (
@@ -30,8 +30,10 @@ class SiteModel(BaseModel):
 
 class QBConfig(BaseModel):
     url: str
-    username: str
-    password: str
+    auth_type: Literal["password", "api_key"] = "password"
+    username: str = ""
+    password: str = ""
+    api_key: str = ""
 
 
 def parse_size(size: Union[str, int]) -> int:

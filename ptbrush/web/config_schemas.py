@@ -46,8 +46,10 @@ class BrushInput(BaseModel):
 
 class DownloaderInput(BaseModel):
     url: str
+    auth_type: Literal["password", "api_key"] = "password"
     username: str = ""
     password: str = ""
+    api_key: str = ""
 
 
 class HeaderInput(BaseModel):
@@ -69,8 +71,10 @@ class ConfigPayload(BaseModel):
 
 class TestDownloaderPayload(BaseModel):
     url: str
+    auth_type: Literal["password", "api_key"] = "password"
     username: str = ""
     password: str = ""
+    api_key: str = ""
 
 
 class TestSitePayload(BaseModel):

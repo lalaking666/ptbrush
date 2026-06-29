@@ -41,11 +41,19 @@ def _serialize_brush(brush) -> dict:
 
 def _serialize_downloader(dl) -> dict:
     if dl is None:
-        return {"url": "", "username": "", "password": ""}
+        return {
+            "url": "",
+            "auth_type": "password",
+            "username": "",
+            "password": "",
+            "api_key": "",
+        }
     return {
         "url": dl.url,
+        "auth_type": dl.auth_type,
         "username": dl.username,
         "password": mask(dl.password),
+        "api_key": mask(dl.api_key),
     }
 
 
@@ -82,8 +90,10 @@ def _payload_to_toml_dict(payload: ConfigPayload) -> dict:
         "brush": brush_dict,
         "downloader": {
             "url": payload.downloader.url,
+            "auth_type": payload.downloader.auth_type,
             "username": payload.downloader.username,
             "password": payload.downloader.password,
+            "api_key": payload.downloader.api_key,
         },
         "sites": [
             {
@@ -153,16 +163,22 @@ def test_downloader():
 
     cfg = PTBrushConfig()
     old_pwd = cfg.downloader.password if cfg.downloader else ""
+    old_api_key = cfg.downloader.api_key if cfg.downloader else ""
     password = _resolve_secret(payload.password, old_pwd)
+    api_key = _resolve_secret(payload.api_key, old_api_key)
 
     qb = None
     try:
-        qb = qbittorrentapi.Client(
-            host=payload.url,
-            username=payload.username,
-            password=password,
-            REQUESTS_ARGS={"timeout": TEST_DOWNLOADER_TIMEOUT},
-        )
+        client_kwargs = {
+            "host": payload.url,
+            "REQUESTS_ARGS": {"timeout": TEST_DOWNLOADER_TIMEOUT},
+        }
+        if payload.auth_type == "api_key":
+            client_kwargs["api_key"] = api_key
+        else:
+            client_kwargs["username"] = payload.username
+            client_kwargs["password"] = password
+        qb = qbittorrentapi.Client(**client_kwargs)
         qb.auth_log_in()
         return jsonify({"ok": True, "message": "连接成功"})
     except Exception as e:
@@ -182,10 +198,14 @@ def config_health():
     missing = []
     if not cfg.downloader or not cfg.downloader.url:
         missing.append("downloader.url")
-    if not cfg.downloader or not cfg.downloader.username:
-        missing.append("downloader.username")
-    if not cfg.downloader or not cfg.downloader.password:
-        missing.append("downloader.password")
+    auth_type = cfg.downloader.auth_type if cfg.downloader else "password"
+    if auth_type == "api_key":
+        if not cfg.downloader or not cfg.downloader.api_key:
+            missing.append("downloader.api_key")
+    else:
+        # username 留空适配 qBittorrent 对可信地址放行登录的场景，不作为必填项
+        if not cfg.downloader or not cfg.downloader.password:
+            missing.append("downloader.password")
     if not cfg.sites:
         missing.append("sites")
     else:

@@ -21,7 +21,13 @@ function emptyForm() {
             upload_cycle: 600,
             download_cycle: 600,
         },
-        downloader: { url: '', username: '', password: '' },
+        downloader: {
+            url: '',
+            auth_type: 'password',
+            username: '',
+            password: '',
+            api_key: '',
+        },
         sites: [],
     };
 }
@@ -108,8 +114,10 @@ export default defineComponent({
             try {
                 const res = await api.post('/api/config/test-downloader', {
                     url: form.downloader.url,
+                    auth_type: form.downloader.auth_type,
                     username: form.downloader.username,
                     password: form.downloader.password,
+                    api_key: form.downloader.api_key,
                 });
                 if (res?.ok) ElMessage.success(res.message);
                 else ElMessage.error(res?.message || '连接失败');
@@ -253,19 +261,37 @@ export default defineComponent({
                                     qBittorrent Web UI 的访问地址。Docker 部署时请填写 PTBrush 容器能够访问到的地址，而不一定是浏览器里的 localhost。
                                 </div>
                             </el-form-item>
-                            <el-form-item label="用户名">
+                            <el-form-item label="认证方式">
+                                <el-radio-group v-model="form.downloader.auth_type">
+                                    <el-radio-button label="password">用户名密码</el-radio-button>
+                                    <el-radio-button label="api_key">API Key</el-radio-button>
+                                </el-radio-group>
+                                <div class="field-help">
+                                    qBittorrent v5.2.0 及以上可使用 API Key；旧版本请继续使用用户名密码。
+                                </div>
+                            </el-form-item>
+                            <el-form-item v-if="form.downloader.auth_type === 'password'" label="用户名">
                                 <el-input v-model="form.downloader.username" />
                                 <div class="field-help">
                                     qBittorrent Web UI 登录用户名，用于读取状态、添加种子、调整文件优先级和删除本工具管理的任务。
                                 </div>
                             </el-form-item>
-                            <el-form-item label="密码">
+                            <el-form-item v-if="form.downloader.auth_type === 'password'" label="密码">
                                 <el-input
                                     v-model="form.downloader.password"
                                     type="password" show-password
                                     placeholder="留空则保留原值" />
                                 <div class="field-help">
                                     已保存的密码会被隐藏显示。留空或保持星号不会覆盖原密码；只有输入新密码时才会更新。
+                                </div>
+                            </el-form-item>
+                            <el-form-item v-if="form.downloader.auth_type === 'api_key'" label="qBittorrent API Key">
+                                <el-input
+                                    v-model="form.downloader.api_key"
+                                    type="password" show-password
+                                    placeholder="留空则保留原值" />
+                                <div class="field-help">
+                                    从 qBittorrent Web UI 生成，通常以 qbt_ 开头；这不是 PT 站点的 x-api-key。
                                 </div>
                             </el-form-item>
                         </div>
@@ -290,6 +316,11 @@ export default defineComponent({
 
                 <div style="margin-top:16px;">
                     <PasswordCard :login-required="loginRequired" />
+                </div>
+
+                <div class="config-bottom-actions">
+                    <el-button :loading="loading" plain @click="load">重新加载</el-button>
+                    <el-button type="primary" :loading="saving" :disabled="!loaded" @click="save">保存</el-button>
                 </div>
             </template>
         </div>

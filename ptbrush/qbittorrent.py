@@ -61,11 +61,22 @@ class QBittorrent:
 
     
     
-    def __init__(self, qb_url: str, username: str, password: str):
+    def __init__(
+        self,
+        qb_url: str,
+        username: str = "",
+        password: str = "",
+        auth_type: str = "password",
+        api_key: str = "",
+    ):
         self.qb_url = qb_url
-        self.qb = qbittorrentapi.Client(
-            host=qb_url, username=username, password=password
-        )
+        client_kwargs = {"host": qb_url}
+        if auth_type == "api_key":
+            client_kwargs["api_key"] = api_key
+        else:
+            client_kwargs["username"] = username
+            client_kwargs["password"] = password
+        self.qb = qbittorrentapi.Client(**client_kwargs)
         self.qb.auth_log_in()
 
         # 受此项目管理的种子所带有的分类名

@@ -49,7 +49,8 @@ def atomic_write(data: Dict[str, Any]) -> None:
 def merge_with_mask(old: Dict[str, Any], new: Dict[str, Any]) -> Dict[str, Any]:
     """
     把前端提交的 new 合并到 old：
-    - downloader.password、sites[i].cookie、sites[i].headers[j].value 三个敏感字段
+    - downloader.password、downloader.api_key、sites[i].cookie、sites[i].headers[j].value
+      这些敏感字段
       若提交值是 "" 或 "***"，保留 old 中的值
     - 其他字段直接用 new 的
     - 返回新的 dict，old 不会被改
@@ -58,10 +59,12 @@ def merge_with_mask(old: Dict[str, Any], new: Dict[str, Any]) -> Dict[str, Any]:
     old_downloader = old.get("downloader", {}) or {}
     old_sites = old.get("sites", []) or []
 
-    # downloader.password
+    # downloader.password / downloader.api_key
     dl = dict(merged.get("downloader") or {})
     if is_masked(dl.get("password", "")):
         dl["password"] = old_downloader.get("password", "")
+    if is_masked(dl.get("api_key", "")):
+        dl["api_key"] = old_downloader.get("api_key", "")
     merged["downloader"] = dl
 
     # sites[i].cookie 和 headers[j].value
